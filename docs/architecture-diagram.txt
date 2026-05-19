@@ -1,0 +1,35 @@
+      PYTHIA "ASK YOUR DATASPACE" — GAIA-X TRUST-GATED DATASPACE CLIENT
+
+┌─ PYTHIA CLIENT — ask a natural-language question across providers (trust-verified) ──────────────────────────────────────────────────────────────────┐
+│ ① CATALOG fan-out ─► ② RANK (semantic relevance) ─► [ GAIA-X TRUST GATES ] ─► ③ NEGOTIATE ─► ④ TRANSFER+EDR ─► ⑤ FETCH                               │
+│ trust gates run per candidate in rank order · verdicts cached per provider                                                                           │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                                  │
+                                                                  ▼
+┌─ GAIA-X TRUST GATES — per candidate · BEFORE negotiation ────────────────────────────────────────┐        ┌─ GAIA-X TRUST ANCHORS ───────────────────┐
+│ ⓐ VERIFY PROVIDER VC                                                                             │        │ Credential source                        │
+│    structure → schema (SHACL) → trusted issuer → validity → cryptographic signature              │        │   resolves a provider's signed VC        │
+│    (signing key bound to the issuer's identity)                                                  │◄────── │   → roadmap: GXDCH / Notary / did:web    │
+│ ⓑ VERIFY ODRL OFFER                                                                              │        │ Trust list = accepted issuer DIDs        │
+│    policy shape valid · usage rules well-formed (machine-readable ODRL)                          │        │   did:web:registry.gaia-x.eu             │
+│ ✗ fail → SKIP candidate (with reason)                     ✓ pass → ③ NEGOTIATE                   │        │   did:key:z6Mk…                          │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘        └──────────────────────────────────────────┘
+    │     ①③④ Management API (TLS/mTLS optional)                                                            feeds VC + accepted issuer DIDs → gate ⓐ
+    ▼
+DATASPACE PROTOCOL — DSP 2025-1 (catalog / negotiate / transfer)                      DATA-PLANE PULL — EDR ⑤ (token-authorized fetch)
+┌─ CONSUMER Connector ───────┐              ┌─ PROVIDER Connector ───────┐              ┌─ Provider data-plane ────┐       ┌─ Backend Data Source ─────┐
+│ EDC                        │:29194↔:19194 │ EDC                        │              │ :19191/public/...        │HTTP   │ dataset endpoints         │
+│ Mgmt :29193                │              │ Mgmt :19193                │EDR pull      │                          │─plain►│ (e.g. CO₂ datasets)       │
+│ DSP  :29194                │◄═══════════► │ DSP  :19194                │──proxied──►  └──────────────────────────┘       │                           │
+│                            │              │ data-plane :19191          │                                                 └───────────────────────────┘
+└────────────────────────────┘              │                            │
+                                            └────────────────────────────┘
+                                                  ▲
+                                            ┌─ Provider provisioning ────────────────────────────┐      Provider publishes signed VC + ODRL offers
+                                            │ registers assets · policies · contracts            │      → consumed by TRUST ANCHORS ▲
+                                            │ asset data URL → backend source                    │
+                                            └────────────────────────────────────────────────────┘
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+STANDARDS  W3C Verifiable Credentials · DIDs · Gaia-X trust framework · ODRL 2.0 · SHACL · Dataspace Protocol (DSP 2025-1) · DCAT
+

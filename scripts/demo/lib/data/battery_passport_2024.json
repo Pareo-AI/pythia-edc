@@ -1,0 +1,102 @@
+{
+  "dataset": "Battery Passport — EV Battery Cell Provenance 2024",
+  "source": "Pythia Demo Data",
+  "regulation": "EU Battery Regulation (EU) 2023/1542",
+  "standard": "Catena-X Battery Pass v4.0",
+  "period": "2024",
+  "certified_by": "TÜV SÜD Battery Testing",
+  "batteries": [
+    {
+      "battery_id": "BAT-2024-NMC-001",
+      "model": "EV Compact X1",
+      "chemistry": "NMC 811",
+      "capacity_kwh": 58.0,
+      "nominal_voltage_v": 400,
+      "cells": {
+        "manufacturer": "CATL",
+        "country_of_origin": "China",
+        "cell_format": "Prismatic",
+        "cells_per_pack": 216
+      },
+      "critical_raw_materials": {
+        "lithium": {"mass_kg": 8.4, "source_country": "Chile", "mining_standard": "IRMA"},
+        "cobalt": {"mass_kg": 6.1, "source_country": "DRC", "mining_standard": "RMAP"},
+        "nickel": {"mass_kg": 28.7, "source_country": "Finland", "mining_standard": "ISO 14001"},
+        "manganese": {"mass_kg": 3.2, "source_country": "South Africa", "mining_standard": "ISO 14001"}
+      },
+      "recycled_content_pct": {
+        "cobalt": 18.0,
+        "lithium": 4.0,
+        "nickel": 6.0
+      },
+      "state_of_health_pct": 100,
+      "expected_cycle_life": 2000,
+      "carbon_footprint_kg_co2e": 1950,
+      "carbon_footprint_kg_per_kwh": 33.6,
+      "production_plant": "CATL Arnstadt, Germany"
+    },
+    {
+      "battery_id": "BAT-2024-NMC-002",
+      "model": "EV SUV X3",
+      "chemistry": "NMC 811",
+      "capacity_kwh": 82.0,
+      "nominal_voltage_v": 400,
+      "cells": {
+        "manufacturer": "Samsung SDI",
+        "country_of_origin": "Hungary",
+        "cell_format": "Cylindrical 4680",
+        "cells_per_pack": 344
+      },
+      "critical_raw_materials": {
+        "lithium": {"mass_kg": 11.9, "source_country": "Australia", "mining_standard": "IRMA"},
+        "cobalt": {"mass_kg": 8.6, "source_country": "DRC", "mining_standard": "RMAP"},
+        "nickel": {"mass_kg": 40.6, "source_country": "Norway", "mining_standard": "ISO 14001"},
+        "manganese": {"mass_kg": 4.5, "source_country": "Brazil", "mining_standard": "ISO 14001"}
+      },
+      "recycled_content_pct": {
+        "cobalt": 22.0,
+        "lithium": 6.0,
+        "nickel": 8.0
+      },
+      "state_of_health_pct": 100,
+      "expected_cycle_life": 2000,
+      "carbon_footprint_kg_co2e": 2940,
+      "carbon_footprint_kg_per_kwh": 35.9,
+      "production_plant": "Samsung SDI Göd, Hungary"
+    },
+    {
+      "battery_id": "BAT-2024-LFP-003",
+      "model": "PHEV Sedan M5",
+      "chemistry": "LFP",
+      "capacity_kwh": 18.0,
+      "nominal_voltage_v": 400,
+      "cells": {
+        "manufacturer": "BYD",
+        "country_of_origin": "Germany",
+        "cell_format": "Blade",
+        "cells_per_pack": 128
+      },
+      "critical_raw_materials": {
+        "lithium": {"mass_kg": 2.6, "source_country": "Argentina", "mining_standard": "IRMA"},
+        "iron": {"mass_kg": 14.2, "source_country": "Germany", "mining_standard": "ISO 14001"},
+        "phosphorus": {"mass_kg": 5.8, "source_country": "Germany", "mining_standard": "ISO 14001"}
+      },
+      "recycled_content_pct": {
+        "lithium": 9.0,
+        "iron": 31.0
+      },
+      "state_of_health_pct": 100,
+      "expected_cycle_life": 3000,
+      "carbon_footprint_kg_co2e": 740,
+      "carbon_footprint_kg_per_kwh": 41.1,
+      "production_plant": "BYD Erfurt, Germany"
+    }
+  ],
+  "summary": {
+    "batteries_registered": 3,
+    "avg_carbon_footprint_kg_per_kwh": 36.9,
+    "batteries_with_conflict_mineral_audit": 3,
+    "batteries_with_recycled_content_declaration": 3,
+    "eu_battery_regulation_compliant": true
+  }
+}

@@ -1,0 +1,13 @@
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix odrl: <http://www.w3.org/ns/odrl/2/> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+odrl:OfferShape
+    a sh:NodeShape ;
+    sh:targetClass odrl:Offer ;
+    sh:nodeKind sh:IRI ;
+    sh:property [
+        sh:path    odrl:target ;
+        sh:minCount 1 ;
+        sh:message "ODRL offer must have at least one odrl:target" ;
+    ] .

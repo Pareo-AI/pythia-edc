@@ -1,0 +1,33 @@
+      PYTHIA — UNDER THE HOOD
+      Not a wrapper. Three real layers — with a trust layer across all of them.
+
+
+                ┌─ LAYER 3 — MCP SERVER ───────────────────────────────────────────────────────────────┐   ┌─ TRUST LAYER (cryptographic · offline) ───┐
+AI agent ──────►│ hands the whole thing to an AI agent — tools exposed over MCP                        │──►│ across all three layers                   │
+                │ → Claude or any MCP-capable agent                                                    │   │                                           │
+                └──────────────────────────────────────────────────────────────────────────────────────┘   │ ⓐ PROVIDER VC                             │
+                                                            ▼                                              │    Ed25519 signature                      │
+                ┌─ LAYER 2 — NATURAL-LANGUAGE INTERFACE ───────────────────────────────────────────────┐   │    expiry window                          │
+                │ turns a sentence into the right asset (semantic ranking)                             │   │    issuer ↔ key binding                   │
+                │ IBM Granite embeddings — granite-embedding-97m-multilingual-r2 (Apache-2.0, ~130 MB) │   │    issuer on trust-list                   │
+your sentence ─►│ offline · multilingual · no API key · no query leaves the machine                    │──►│                                           │
+                │                                                                                      │   │ ⓑ ODRL OFFER                              │
+                │ relevance: exact query 0.98 · reworded query 0.93                                    │   │    validated against                      │
+                │                                                                                      │   │    a SHACL shape                          │
+                └──────────────────────────────────────────────────────────────────────────────────────┘   │                                           │
+                                                            ▼                                              │ either check fails →                      │
+                ┌─ LAYER 1 — EDC CORE ─────────────────────────────────────────────────────────────────┐   │ Pythia REFUSES to negotiate               │
+                │ Python client for the Dataspace Protocol (DSP 2025-1)                                │   │                                           │
+                │ full negotiation state machine: REQUESTED → AGREED → VERIFIED → FINALIZED            │   │                                           │
+                │ DCAT catalogs · ODRL policies (correct JSON-LD contexts) · EDR token flow            │──►│                                           │
+                │ typed errors — a real message, never a silent 400                                    │   │                                           │
+                │ no message broker · no callback server — just a library                              │   │                                           │
+                └──────────────────────────────────────────────────────────────────────────────────────┘   └───────────────────────────────────────────┘
+                                                            ▼
+                ┌──────────────────────────────────────────────────────────────────────────────────────┐
+                │ speaks to ANY EDC connector · Dataspace Protocol (DSP 2025-1)                        │
+                └──────────────────────────────────────────────────────────────────────────────────────┘
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+natural language  +  agent access  +  cryptographic credential verification —  one  `pip install`,  against any EDC connector
+

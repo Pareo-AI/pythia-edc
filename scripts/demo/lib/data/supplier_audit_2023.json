@@ -1,0 +1,120 @@
+{
+  "dataset": "Supplier Qualification Audit Results 2023",
+  "source": "Pythia Demo Data",
+  "period": "2023",
+  "standard": "IATF 16949",
+  "auditor": "Bureau Veritas Automotive",
+  "audits": [
+    {
+      "supplier": "AutoTech GmbH",
+      "bpnl": "BPNL000000001234",
+      "location": "Stuttgart",
+      "audit_date": "2023-09-14",
+      "score": 87,
+      "grade": "A",
+      "areas": {
+        "quality_management": 91,
+        "delivery_reliability": 85,
+        "sustainability_practices": 84,
+        "financial_stability": 88,
+        "innovation_capability": 83
+      },
+      "open_corrective_actions": 2,
+      "status": "Approved"
+    },
+    {
+      "supplier": "Precision Parts AG",
+      "bpnl": "BPNL000000005678",
+      "location": "Munich",
+      "audit_date": "2023-07-22",
+      "score": 79,
+      "grade": "B",
+      "areas": {
+        "quality_management": 82,
+        "delivery_reliability": 78,
+        "sustainability_practices": 77,
+        "financial_stability": 81,
+        "innovation_capability": 74
+      },
+      "open_corrective_actions": 5,
+      "status": "Approved with Conditions"
+    },
+    {
+      "supplier": "Bavaria Motors KG",
+      "bpnl": "BPNL000000009012",
+      "location": "Regensburg",
+      "audit_date": "2023-10-03",
+      "score": 92,
+      "grade": "A+",
+      "areas": {
+        "quality_management": 95,
+        "delivery_reliability": 90,
+        "sustainability_practices": 91,
+        "financial_stability": 94,
+        "innovation_capability": 92
+      },
+      "open_corrective_actions": 0,
+      "status": "Approved — Preferred Supplier"
+    },
+    {
+      "supplier": "NordMetall GmbH",
+      "bpnl": "BPNL000000003456",
+      "location": "Hamburg",
+      "audit_date": "2023-06-18",
+      "score": 83,
+      "grade": "A",
+      "areas": {
+        "quality_management": 86,
+        "delivery_reliability": 84,
+        "sustainability_practices": 88,
+        "financial_stability": 80,
+        "innovation_capability": 77
+      },
+      "open_corrective_actions": 3,
+      "status": "Approved"
+    },
+    {
+      "supplier": "RheinPlastic SE",
+      "bpnl": "BPNL000000007890",
+      "location": "Düsseldorf",
+      "audit_date": "2023-11-07",
+      "score": 71,
+      "grade": "C",
+      "areas": {
+        "quality_management": 74,
+        "delivery_reliability": 69,
+        "sustainability_practices": 72,
+        "financial_stability": 76,
+        "innovation_capability": 65
+      },
+      "open_corrective_actions": 9,
+      "status": "Approved — Improvement Plan Required"
+    },
+    {
+      "supplier": "Sachsen Elektronik GmbH",
+      "bpnl": "BPNL000000002345",
+      "location": "Dresden",
+      "audit_date": "2023-08-30",
+      "score": 88,
+      "grade": "A",
+      "areas": {
+        "quality_management": 90,
+        "delivery_reliability": 87,
+        "sustainability_practices": 93,
+        "financial_stability": 85,
+        "innovation_capability": 89
+      },
+      "open_corrective_actions": 1,
+      "status": "Approved"
+    }
+  ],
+  "summary": {
+    "total_suppliers_audited": 6,
+    "avg_score": 83.3,
+    "preferred_suppliers": 1,
+    "approved_suppliers": 4,
+    "conditional_approvals": 1,
+    "improvement_plans_required": 1,
+    "total_open_corrective_actions": 20
+  }
+}

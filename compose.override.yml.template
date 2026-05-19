@@ -1,0 +1,140 @@
+# Override file for integrating Pythia EDC stack into an existing docker-compose setup with Traefik
+# Copy to compose.override.yml and configure .env with your domain settings
+
+services:
+  # Override simstack-ui to exclude /provider from its catch-all route
+  simstack-ui:
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.frontend.rule=Host(`${DOMAIN}`) && !PathPrefix(`/api`) && !PathPrefix(`/provider`)
+      - traefik.http.routers.frontend.entrypoints=${TRAEFIK_ENTRYPOINT}
+      - traefik.http.routers.frontend.tls=true
+      - traefik.http.routers.frontend.tls.certresolver=${TRAEFIK_CERT_RESOLVER}
+      - traefik.http.services.frontend.loadbalancer.server.port=3000
+
+  pythia-base:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pythia-demo:latest
+    command: ["true"]
+    profiles:
+      - donotstart
+
+  provider:
+    image: pythia-demo:latest
+    container_name: pythia-provider
+    environment:
+      - EDC_SAMPLES_DIR=/app/edc-samples
+    command: ["/bin/bash", "/app/scripts/start_provider.sh"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-H", "X-Api-Key: password", "-H", "Content-Type: application/json", "-X", "POST", "http://localhost:19193/management/v3/assets/request", "-d", "{\"@context\":{\"@vocab\":\"https://w3id.org/edc/v0.0.1/ns/\"}}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - default
+      - pythia-net
+    labels:
+      traefik.enable: "true"
+      # DSP Protocol (catalog/negotiation) - port 19194 -> /protocol
+      traefik.http.routers.pythia-provider-dsp.rule: "Host(`${DOMAIN}`) && PathPrefix(`/provider/dsp`)"
+      traefik.http.routers.pythia-provider-dsp.entrypoints: "${TRAEFIK_ENTRYPOINT}"
+      traefik.http.routers.pythia-provider-dsp.tls: "true"
+      traefik.http.routers.pythia-provider-dsp.tls.certresolver: "${TRAEFIK_CERT_RESOLVER}"
+      traefik.http.routers.pythia-provider-dsp.priority: "201"
+      traefik.http.routers.pythia-provider-dsp.service: "pythia-provider-dsp"
+      traefik.http.routers.pythia-provider-dsp.middlewares: "pythia-provider-dsp-strip"
+      traefik.http.middlewares.pythia-provider-dsp-strip.replacepathregex.regex: "^/provider/dsp(.*)"
+      traefik.http.middlewares.pythia-provider-dsp-strip.replacepathregex.replacement: "/protocol$$1"
+      traefik.http.services.pythia-provider-dsp.loadbalancer.server.port: "19194"
+      # Data Plane (data transfer) - port 19291 -> /public
+      traefik.http.routers.pythia-provider-data.rule: "Host(`${DOMAIN}`) && PathPrefix(`/provider/data`)"
+      traefik.http.routers.pythia-provider-data.entrypoints: "${TRAEFIK_ENTRYPOINT}"
+      traefik.http.routers.pythia-provider-data.tls: "true"
+      traefik.http.routers.pythia-provider-data.tls.certresolver: "${TRAEFIK_CERT_RESOLVER}"
+      traefik.http.routers.pythia-provider-data.priority: "201"
+      traefik.http.routers.pythia-provider-data.service: "pythia-provider-data"
+      traefik.http.routers.pythia-provider-data.middlewares: "pythia-provider-data-strip"
+      traefik.http.middlewares.pythia-provider-data-strip.replacepathregex.regex: "^/provider/data(.*)"
+      traefik.http.middlewares.pythia-provider-data-strip.replacepathregex.replacement: "/public$$1"
+      traefik.http.services.pythia-provider-data.loadbalancer.server.port: "19291"
+      # Management API (administration) - port 19193 -> /management
+      traefik.http.routers.pythia-provider-management.rule: "Host(`${DOMAIN}`) && PathPrefix(`/provider/management`)"
+      traefik.http.routers.pythia-provider-management.entrypoints: "${TRAEFIK_ENTRYPOINT}"
+      traefik.http.routers.pythia-provider-management.tls: "true"
+      traefik.http.routers.pythia-provider-management.tls.certresolver: "${TRAEFIK_CERT_RESOLVER}"
+      traefik.http.routers.pythia-provider-management.priority: "201"
+      traefik.http.routers.pythia-provider-management.service: "pythia-provider-management"
+      traefik.http.routers.pythia-provider-management.middlewares: "pythia-provider-management-strip"
+      traefik.http.middlewares.pythia-provider-management-strip.replacepathregex.regex: "^/provider(.*)"
+      traefik.http.middlewares.pythia-provider-management-strip.replacepathregex.replacement: "$$1"
+      traefik.http.services.pythia-provider-management.loadbalancer.server.port: "19193"
+
+  consumer:
+    image: pythia-demo:latest
+    container_name: pythia-consumer
+    environment:
+      - EDC_SAMPLES_DIR=/app/edc-samples
+    command: ["/bin/bash", "/app/scripts/start_consumer.sh"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-H", "X-Api-Key: password", "-H", "Content-Type: application/json", "-X", "POST", "http://localhost:29193/management/v3/assets/request", "-d", "{\"@context\":{\"@vocab\":\"https://w3id.org/edc/v0.0.1/ns/\"}}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - default
+      - pythia-net
+    depends_on:
+      provider:
+        condition: service_healthy
+
+  mock-server:
+    image: pythia-demo:latest
+    container_name: pythia-mock-server
+    environment:
+      - MOCK_PORT=9876
+    command: ["/bin/bash", "/app/scripts/start_mock.sh"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9876/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - pythia-net
+    depends_on:
+      provider:
+        condition: service_healthy
+      consumer:
+        condition: service_healthy
+
+  seed:
+    image: pythia-demo:latest
+    container_name: pythia-seed
+    environment:
+      - EDC_SAMPLES_DIR=/app/edc-samples
+      - PROVIDER_MANAGEMENT=http://provider:19193/management
+    command: ["uv", "run", "python", "scripts/seed_demo.py"]
+    networks:
+      - pythia-net
+    depends_on:
+      provider:
+        condition: service_healthy
+      consumer:
+        condition: service_healthy
+      mock-server:
+        condition: service_healthy
+    restart: "no"
+
+networks:
+  pythia-net:
+    driver: bridge
+  default:
+    external: true
+    name: traefik-network

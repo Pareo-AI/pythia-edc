@@ -1,0 +1,89 @@
+{
+  "dataset": "Logistics & Transport Emissions — Supply Chain 2023",
+  "source": "Pythia Demo Data",
+  "unit": "tonnes CO2e",
+  "period": "2023",
+  "standard": "GHG Protocol Scope 3 — Category 4 (Upstream Transport)",
+  "certified_by": "DNV GL",
+  "lanes": [
+    {
+      "lane_id": "LANE-001",
+      "origin": "Munich, DE",
+      "destination": "Stuttgart, DE",
+      "mode": "Road (HGV Euro VI)",
+      "distance_km": 225,
+      "annual_shipments": 1840,
+      "avg_load_factor_pct": 0.74,
+      "co2e_per_shipment_kg": 38.2,
+      "total_co2e_t": 70.3,
+      "carrier": "DB Schenker",
+      "emission_factor_standard": "EN 16258"
+    },
+    {
+      "lane_id": "LANE-002",
+      "origin": "Hamburg, DE",
+      "destination": "Regensburg, DE",
+      "mode": "Rail (electric)",
+      "distance_km": 680,
+      "annual_shipments": 620,
+      "avg_load_factor_pct": 0.81,
+      "co2e_per_shipment_kg": 8.4,
+      "total_co2e_t": 5.2,
+      "carrier": "DB Cargo",
+      "emission_factor_standard": "EN 16258"
+    },
+    {
+      "lane_id": "LANE-003",
+      "origin": "Dresden, DE",
+      "destination": "Stuttgart, DE",
+      "mode": "Road (HGV Euro VI)",
+      "distance_km": 580,
+      "annual_shipments": 410,
+      "avg_load_factor_pct": 0.68,
+      "co2e_per_shipment_kg": 114.6,
+      "total_co2e_t": 47.0,
+      "carrier": "DHL Freight",
+      "emission_factor_standard": "EN 16258"
+    },
+    {
+      "lane_id": "LANE-004",
+      "origin": "Düsseldorf, DE",
+      "destination": "Munich, DE",
+      "mode": "Road (HGV Euro VI)",
+      "distance_km": 610,
+      "annual_shipments": 980,
+      "avg_load_factor_pct": 0.71,
+      "co2e_per_shipment_kg": 120.1,
+      "total_co2e_t": 117.7,
+      "carrier": "Dachser",
+      "emission_factor_standard": "EN 16258"
+    },
+    {
+      "lane_id": "LANE-005",
+      "origin": "Shanghai, CN",
+      "destination": "Hamburg, DE",
+      "mode": "Sea (container, main haul)",
+      "distance_km": 19850,
+      "annual_shipments": 48,
+      "avg_load_factor_pct": 0.85,
+      "co2e_per_shipment_kg": 8420.0,
+      "total_co2e_t": 404.2,
+      "carrier": "Maersk",
+      "emission_factor_standard": "IMO EEXI"
+    }
+  ],
+  "modal_split": {
+    "road_pct": 0.71,
+    "rail_pct": 0.14,
+    "sea_pct": 0.15,
+    "air_pct": 0.00
+  },
+  "summary": {
+    "total_co2e_t": 644.4,
+    "total_shipments": 3898,
+    "lanes_reported": 5,
+    "highest_impact_lane": "LANE-005 (Shanghai→Hamburg, sea freight)",
+    "yoy_change_pct": -8.1,
+    "electrification_target_lanes": ["LANE-001", "LANE-003", "LANE-004"]
+  }
+}

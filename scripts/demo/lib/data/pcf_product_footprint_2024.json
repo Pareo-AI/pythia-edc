@@ -1,0 +1,75 @@
+{
+  "dataset": "Product Carbon Footprint (PCF) — Vehicle Models 2024",
+  "source": "Pythia Demo Data",
+  "standard": "Catena-X PCF Rulebook v3.0 / ISO 14067",
+  "unit": "kg CO2e per vehicle",
+  "period": "MY2024 (production year)",
+  "certified_by": "Dekra SE",
+  "models": [
+    {
+      "model": "EV Compact X1",
+      "platform": "EV-Platform-1",
+      "drivetrain": "Battery Electric (BEV)",
+      "pcf_total_kg": 8420,
+      "breakdown": {
+        "raw_materials": 4810,
+        "manufacturing": 1230,
+        "battery_production": 1950,
+        "logistics": 310,
+        "end_of_life": 120
+      },
+      "battery_kwh": 58,
+      "battery_chemistry": "NMC 811",
+      "battery_pcf_kg": 1950,
+      "battery_pcf_kg_per_kwh": 33.6,
+      "production_site": "Plant Regensburg"
+    },
+    {
+      "model": "EV SUV X3",
+      "platform": "EV-Platform-2",
+      "drivetrain": "Battery Electric (BEV)",
+      "pcf_total_kg": 12300,
+      "breakdown": {
+        "raw_materials": 6900,
+        "manufacturing": 1680,
+        "battery_production": 2940,
+        "logistics": 510,
+        "end_of_life": 270
+      },
+      "battery_kwh": 82,
+      "battery_chemistry": "NMC 811",
+      "battery_pcf_kg": 2940,
+      "battery_pcf_kg_per_kwh": 35.9,
+      "production_site": "Plant Munich"
+    },
+    {
+      "model": "PHEV Sedan M5",
+      "platform": "Hybrid-Platform-3",
+      "drivetrain": "Plug-in Hybrid (PHEV)",
+      "pcf_total_kg": 14700,
+      "breakdown": {
+        "raw_materials": 7200,
+        "manufacturing": 2100,
+        "battery_production": 740,
+        "logistics": 420,
+        "end_of_life": 240
+      },
+      "battery_kwh": 18,
+      "battery_chemistry": "LFP",
+      "battery_pcf_kg": 740,
+      "battery_pcf_kg_per_kwh": 41.1,
+      "production_site": "Plant Stuttgart"
+    }
+  ],
+  "summary": {
+    "models_assessed": 3,
+    "avg_pcf_kg_co2e": 11807,
+    "avg_battery_pcf_kg_per_kwh": 36.9,
+    "pct_pcf_from_raw_materials": 0.58,
+    "scope": "Cradle-to-gate (excludes use phase)"
+  },
+  "catena_x": {
+    "aspect_model": "urn:samm:io.catenax.pcf:5.0.0",
+    "data_model_version": "5.0.0"
+  }
+}

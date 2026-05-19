@@ -1,0 +1,105 @@
+{
+  "dataset": "SVHC Substance Report — Q4 2023",
+  "source": "Pythia Demo Data",
+  "regulation": "REACH (EC) No 1907/2006",
+  "period": "Q4 2023",
+  "certified_by": "SGS Deutschland GmbH",
+  "substances": [
+    {
+      "name": "Lead",
+      "cas": "7439-92-1",
+      "svhc_reason": "Toxic for reproduction (Art. 57c)",
+      "concentration_ppm": 95,
+      "threshold_ppm": 1000,
+      "compliant": true,
+      "supplier_exceedances": 0
+    },
+    {
+      "name": "Cadmium",
+      "cas": "7440-43-9",
+      "svhc_reason": "Carcinogenic (Art. 57a)",
+      "concentration_ppm": 48,
+      "threshold_ppm": 100,
+      "compliant": true,
+      "supplier_exceedances": 0
+    },
+    {
+      "name": "Hexavalent Chromium",
+      "cas": "18540-29-9",
+      "svhc_reason": "Carcinogenic (Art. 57a)",
+      "concentration_ppm": 0,
+      "threshold_ppm": 1000,
+      "compliant": true,
+      "supplier_exceedances": 0
+    },
+    {
+      "name": "Mercury",
+      "cas": "7439-97-6",
+      "svhc_reason": "Toxic for reproduction (Art. 57c)",
+      "concentration_ppm": 0,
+      "threshold_ppm": 1000,
+      "compliant": true,
+      "supplier_exceedances": 0
+    },
+    {
+      "name": "Bisphenol A (BPA)",
+      "cas": "80-05-7",
+      "svhc_reason": "Endocrine disruptor (Art. 57f)",
+      "concentration_ppm": 310,
+      "threshold_ppm": 1000,
+      "compliant": true,
+      "supplier_exceedances": 0
+    },
+    {
+      "name": "Dibutyl phthalate (DBP)",
+      "cas": "84-74-2",
+      "svhc_reason": "Toxic for reproduction (Art. 57c)",
+      "concentration_ppm": 820,
+      "threshold_ppm": 1000,
+      "compliant": true,
+      "supplier_exceedances": 0
+    },
+    {
+      "name": "Cobalt dichloride",
+      "cas": "7646-79-9",
+      "svhc_reason": "Carcinogenic (Art. 57a)",
+      "concentration_ppm": 0,
+      "threshold_ppm": 1000,
+      "compliant": true,
+      "supplier_exceedances": 0
+    }
+  ],
+  "by_supplier": [
+    {
+      "supplier": "AutoTech GmbH",
+      "bpnl": "BPNL000000001234",
+      "articles_tested": 312,
+      "articles_compliant": 312,
+      "highest_risk_substance": "Lead",
+      "max_concentration_ppm": 95
+    },
+    {
+      "supplier": "Precision Parts AG",
+      "bpnl": "BPNL000000005678",
+      "articles_tested": 284,
+      "articles_compliant": 284,
+      "highest_risk_substance": "Dibutyl phthalate (DBP)",
+      "max_concentration_ppm": 820
+    },
+    {
+      "supplier": "Bavaria Motors KG",
+      "bpnl": "BPNL000000009012",
+      "articles_tested": 251,
+      "articles_compliant": 251,
+      "highest_risk_substance": "Bisphenol A (BPA)",
+      "max_concentration_ppm": 310
+    }
+  ],
+  "summary": {
+    "articles_tested": 847,
+    "articles_compliant": 847,
+    "compliance_rate": 1.0,
+    "substances_monitored": 7,
+    "substances_with_exceedances": 0
+  }
+}

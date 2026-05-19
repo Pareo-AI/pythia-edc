@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# demo — single entrypoint for the Pythia demo. Run `./demo` to see what to run.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DEMO_DIR="$ROOT/scripts/demo"
+
+# Load a config profile. ENV_FILE defaults to ./demo.env; override to pick a
+# profile, e.g. `ENV_FILE=demo.consumer.env ./demo up`. Every assignment in the
+# file is exported (set -a) so it reaches both up.sh and the `uv run` children.
+_env_file_explicit="${ENV_FILE:-}"
+ENV_FILE="${ENV_FILE:-$ROOT/demo.env}"
+if [ -f "$ENV_FILE" ]; then
+    echo "[demo] loading config from $ENV_FILE" >&2
+    set -a
+    # shellcheck disable=SC1090
+    source "$ENV_FILE"
+    set +a
+elif [ -n "$_env_file_explicit" ]; then
+    echo "[demo] WARNING: ENV_FILE=$ENV_FILE not found — using defaults/inline env" >&2
+fi
+
+cmd="${1:-help}"
+shift || true
+
+case "$cmd" in
+    up)      exec bash "$DEMO_DIR/up.sh"     "$@" ;;
+    down)    exec bash "$DEMO_DIR/down.sh"   "$@" ;;
+    verify)  exec bash "$DEMO_DIR/verify.sh" "$@" ;;
+    smoke)   exec bash "$DEMO_DIR/smoke.sh"  "$@" ;;
+    ask)     exec uv run --extra ask --extra trust --extra cli python "$DEMO_DIR/ask.py" "$@" ;;
+    repl)    exec uv run --extra ask --extra trust --extra cli python "$DEMO_DIR/ask.py" --repl "$@" ;;
+    offline) exec uv run --extra synth --extra explain python "$DEMO_DIR/offline.py" "$@" ;;
+    help|-h|--help|"")
+        cat <<'EOF'
+Pythia demo — usage: ./demo <command>
+
+  verify    Full regression gate: unit tests + stack + live beats + teardown.
+            Run this after any change — it tells you if the demo still works.
+  up        Start the demo stack (connectors + mock server + seed provider).
+  down      Stop the demo stack.
+  ask       Query the running stack: ./demo ask "CO2 emissions ..."
+            (flags: --raw, --top-k N; trust verification is ON by default —
+            DonauTech is intentionally untrusted; --no-verify-trust to disable)
+  repl      Interactive query loop against the running stack.
+  smoke     Run the live smoke beats only (stack must already be up: ./demo up).
+  offline   Run the no-EDC synth/explain demo (needs a local Ollama).
+
+Config: any env var below can live in a profile file instead of the command
+line. ./demo loads ./demo.env by default; copy demo.env.example to get started,
+or select a profile with ENV_FILE=demo.consumer.env ./demo up.
+
+Advanced: point `up` at external connectors with START_LOCAL_CONNECTORS=0 (or
+CONSUMER_ONLY=1 for a local-consumer/remote-providers setup) plus PROVIDER_MGMT /
+CONSUMER_MGMT / EDC_API_KEY, PYTHIA_PROVIDERS, and the PYTHIA_VERIFY_SSL,
+PYTHIA_CA_BUNDLE, PYTHIA_CLIENT_CERT/KEY TLS env vars.
+EOF
+        ;;
+    *)
+        echo "demo: unknown command '$cmd'. Run './demo' for usage." >&2
+        exit 2
+        ;;
+esac

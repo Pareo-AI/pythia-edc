@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  pythia-base:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pythia-demo:latest
+    command: ["true"]  # No-op command, this service just builds the image
+    profiles:
+      - donotstart  # Prevents this service from starting
+
+  provider:
+    image: pythia-demo:latest
+    container_name: pythia-provider
+    ports:
+      - "19193:19193"  # Provider management API (for external access)
+      - "19291:19291"  # Provider data plane public (for data transfer)
+    environment:
+      - EDC_SAMPLES_DIR=/app/edc-samples
+    command: ["/bin/bash", "/app/scripts/start_provider.sh"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-H", "X-Api-Key: password", "-H", "Content-Type: application/json", "-X", "POST", "http://localhost:19193/management/v3/assets/request", "-d", "{\"@context\":{\"@vocab\":\"https://w3id.org/edc/v0.0.1/ns/\"}}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - pythia-net
+    depends_on:
+      - pythia-base
+
+  consumer:
+    image: pythia-demo:latest
+    container_name: pythia-consumer
+    ports:
+      - "29193:29193"  # Consumer management API (for external access)
+    environment:
+      - EDC_SAMPLES_DIR=/app/edc-samples
+    command: ["/bin/bash", "/app/scripts/start_consumer.sh"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-H", "X-Api-Key: password", "-H", "Content-Type: application/json", "-X", "POST", "http://localhost:29193/management/v3/assets/request", "-d", "{\"@context\":{\"@vocab\":\"https://w3id.org/edc/v0.0.1/ns/\"}}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - pythia-net
+    depends_on:
+      provider:
+        condition: service_healthy
+
+  mock-server:
+    image: pythia-demo:latest
+    container_name: pythia-mock-server
+    ports:
+      - "9876:9876"  # Mock server
+    environment:
+      - MOCK_PORT=9876
+    command: ["/bin/bash", "/app/scripts/start_mock.sh"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9876/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - pythia-net
+    depends_on:
+      provider:
+        condition: service_healthy
+      consumer:
+        condition: service_healthy
+
+  seed:
+    image: pythia-demo:latest
+    container_name: pythia-seed
+    environment:
+      - EDC_SAMPLES_DIR=/app/edc-samples
+      - PROVIDER_MANAGEMENT=http://provider:19193/management
+    command: ["uv", "run", "python", "scripts/demo/lib/seed.py"]
+    networks:
+      - pythia-net
+    depends_on:
+      provider:
+        condition: service_healthy
+      consumer:
+        condition: service_healthy
+      mock-server:
+        condition: service_healthy
+    restart: "no"
+
+networks:
+  pythia-net:
+    driver: bridge

@@ -1,0 +1,17 @@
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix cred: <https://www.w3.org/2018/credentials#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+cred:VerifiableCredentialShape
+    a sh:NodeShape ;
+    sh:targetClass cred:VerifiableCredential ;
+    sh:property [
+        sh:path    cred:issuer ;
+        sh:minCount 1 ;
+        sh:message "Verifiable Credential must have a non-empty issuer" ;
+    ] ;
+    sh:property [
+        sh:path    cred:credentialSubject ;
+        sh:minCount 1 ;
+        sh:message "Verifiable Credential must have a credentialSubject" ;
+    ] .

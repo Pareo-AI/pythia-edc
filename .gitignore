@@ -1,0 +1,19 @@
+.venv/
+dist/
+build/
+*.egg-info/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.DS_Store
+.idea
+.claude
+
+# Local demo config profiles (may hold provider URLs / cert paths); examples are tracked.
+demo.env
+demo.*.env
+
+# Local-only material salvaged from the old copy; never published.
+/local-salvage/

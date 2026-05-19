@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" width="600" height="200" role="img" aria-label="Pythia">
+  <defs>
+    <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#161E3D"/>
+      <stop offset="1" stop-color="#0A0E20"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFD774"/>
+      <stop offset="1" stop-color="#F0A310"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="56%" r="55%">
+      <stop offset="0" stop-color="#F5B22A" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#F5B22A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <!-- mark -->
+  <g transform="translate(28,30) scale(0.2734)">
+    <rect width="512" height="512" rx="120" fill="url(#ink)"/>
+    <circle cx="256" cy="292" r="205" fill="url(#glow)"/>
+    <path d="M256 168 C326.4 168 368 234.4 368 296 C368 357.6 308.8 392 256 392 C203.2 392 176 340 176 296 C176 252 220.8 232 256 232 C291.2 232 306 268.5 306 296 C306 323.5 276.9 334 256 334"
+          fill="none" stroke="url(#gold)" stroke-width="38" stroke-linecap="round"/>
+    <path d="M268 184 C308 172 304 112 244 100 C212 94 180 108 174 132 C170 148 190 156 214 156 C240 156 258 170 268 184 Z" fill="url(#gold)"/>
+    <circle cx="248" cy="126" r="12" fill="#0A0E20"/>
+    <g stroke="url(#gold)" stroke-width="7" stroke-linecap="round" fill="none">
+      <path d="M176 138 L150 132 L132 124"/>
+      <path d="M176 138 L150 144 L132 152"/>
+    </g>
+  </g>
+  <!-- wordmark -->
+  <text x="200" y="108" font-family="'Avenir Next','Helvetica Neue','Segoe UI',Arial,sans-serif" font-size="92" font-weight="700" letter-spacing="-2" fill="#0F172A">pythia</text>
+  <text x="204" y="144" font-family="'Avenir Next','Helvetica Neue','Segoe UI',Arial,sans-serif" font-size="17.5" font-weight="500" letter-spacing="0.6" fill="#475569">Ask your data space in plain language</text>
+</svg>

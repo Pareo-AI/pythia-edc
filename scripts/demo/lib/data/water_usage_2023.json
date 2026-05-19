@@ -1,0 +1,89 @@
+{
+  "dataset": "Water Consumption & Recycling — Manufacturing Sites 2023",
+  "source": "Pythia Demo Data",
+  "unit": "m³",
+  "period": "2023",
+  "standard": "GHG Protocol Scope 3 — Category 1 / CDP Water Security",
+  "certified_by": "Bureau Veritas",
+  "sites": [
+    {
+      "site": "Plant Munich",
+      "supplier": "Bavaria Motors KG",
+      "bpnl": "BPNL000000009012",
+      "water_intake_m3": 124500,
+      "water_discharged_m3": 68200,
+      "water_consumed_m3": 56300,
+      "water_recycled_m3": 41800,
+      "recycling_rate_pct": 0.43,
+      "source": "Municipal supply",
+      "water_stress_zone": "Low",
+      "intensity_l_per_unit": 124.5,
+      "yoy_change_pct": -5.2
+    },
+    {
+      "site": "Plant Stuttgart",
+      "supplier": "AutoTech GmbH",
+      "bpnl": "BPNL000000001234",
+      "water_intake_m3": 98700,
+      "water_discharged_m3": 54400,
+      "water_consumed_m3": 44300,
+      "water_recycled_m3": 38600,
+      "recycling_rate_pct": 0.47,
+      "source": "Municipal supply",
+      "water_stress_zone": "Low",
+      "intensity_l_per_unit": 98.7,
+      "yoy_change_pct": -3.8
+    },
+    {
+      "site": "Plant Hamburg",
+      "supplier": "NordMetall GmbH",
+      "bpnl": "BPNL000000003456",
+      "water_intake_m3": 61200,
+      "water_discharged_m3": 39800,
+      "water_consumed_m3": 21400,
+      "water_recycled_m3": 27400,
+      "recycling_rate_pct": 0.58,
+      "source": "Municipal supply",
+      "water_stress_zone": "Low",
+      "intensity_l_per_unit": 61.2,
+      "yoy_change_pct": -7.1
+    },
+    {
+      "site": "Plant Düsseldorf",
+      "supplier": "RheinPlastic SE",
+      "bpnl": "BPNL000000007890",
+      "water_intake_m3": 44800,
+      "water_discharged_m3": 26100,
+      "water_consumed_m3": 18700,
+      "water_recycled_m3": 14600,
+      "recycling_rate_pct": 0.44,
+      "source": "Municipal supply + rainwater harvesting",
+      "water_stress_zone": "Low",
+      "intensity_l_per_unit": 89.6,
+      "yoy_change_pct": -1.4
+    },
+    {
+      "site": "Plant Dresden",
+      "supplier": "Sachsen Elektronik GmbH",
+      "bpnl": "BPNL000000002345",
+      "water_intake_m3": 18200,
+      "water_discharged_m3": 12400,
+      "water_consumed_m3": 5800,
+      "water_recycled_m3": 9100,
+      "recycling_rate_pct": 0.67,
+      "source": "Municipal supply",
+      "water_stress_zone": "Low",
+      "intensity_l_per_unit": 36.4,
+      "yoy_change_pct": -11.3
+    }
+  ],
+  "summary": {
+    "total_water_intake_m3": 347400,
+    "total_water_consumed_m3": 146500,
+    "total_water_recycled_m3": 131500,
+    "avg_recycling_rate_pct": 0.52,
+    "avg_yoy_change_pct": -5.8,
+    "sites_in_high_stress_zones": 0,
+    "sites_reporting": 5
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "dataset": "Energy Consumption — Manufacturing Sites Q1 2024",
+  "source": "Pythia Demo Data",
+  "unit": "MWh",
+  "period": "Q1 2024",
+  "standard": "ISO 50001",
+  "sites": [
+    {
+      "site": "Plant Munich",
+      "supplier": "Bavaria Motors KG",
+      "bpnl": "BPNL000000009012",
+      "electricity_mwh": 4820,
+      "gas_mwh": 2100,
+      "total_mwh": 6920,
+      "renewables_pct": 0.42,
+      "renewable_source": "Rooftop PV + grid green tariff",
+      "yoy_change_pct": -3.1,
+      "intensity_kwh_per_unit": 48.2
+    },
+    {
+      "site": "Plant Stuttgart",
+      "supplier": "AutoTech GmbH",
+      "bpnl": "BPNL000000001234",
+      "electricity_mwh": 3640,
+      "gas_mwh": 1890,
+      "total_mwh": 5530,
+      "renewables_pct": 0.61,
+      "renewable_source": "Wind PPA",
+      "yoy_change_pct": -8.4,
+      "intensity_kwh_per_unit": 39.7
+    },
+    {
+      "site": "Plant Hamburg",
+      "supplier": "NordMetall GmbH",
+      "bpnl": "BPNL000000003456",
+      "electricity_mwh": 2210,
+      "gas_mwh": 980,
+      "total_mwh": 3190,
+      "renewables_pct": 0.78,
+      "renewable_source": "Offshore wind PPA",
+      "yoy_change_pct": -5.7,
+      "intensity_kwh_per_unit": 31.9
+    },
+    {
+      "site": "Plant Dresden",
+      "supplier": "Sachsen Elektronik GmbH",
+      "bpnl": "BPNL000000002345",
+      "electricity_mwh": 1870,
+      "gas_mwh": 420,
+      "total_mwh": 2290,
+      "renewables_pct": 0.89,
+      "renewable_source": "On-site solar + battery storage",
+      "yoy_change_pct": -14.2,
+      "intensity_kwh_per_unit": 22.9
+    },
+    {
+      "site": "Plant Düsseldorf",
+      "supplier": "RheinPlastic SE",
+      "bpnl": "BPNL000000007890",
+      "electricity_mwh": 1540,
+      "gas_mwh": 680,
+      "total_mwh": 2220,
+      "renewables_pct": 0.35,
+      "renewable_source": "Grid green tariff",
+      "yoy_change_pct": -2.0,
+      "intensity_kwh_per_unit": 44.4
+    }
+  ],
+  "summary": {
+    "total_electricity_mwh": 14080,
+    "total_gas_mwh": 6070,
+    "total_energy_mwh": 20150,
+    "avg_renewables_pct": 0.61,
+    "avg_yoy_change_pct": -6.7,
+    "sites_reporting": 5,
+    "sites_above_50pct_renewables": 3
+  }
+}
