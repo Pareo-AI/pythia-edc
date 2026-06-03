@@ -109,6 +109,30 @@ print(answer.to_markdown())
 raw = await ds.ask("quarterly SVHC substance reports", raw=True)
 ```
 
+## Command line
+
+Installing the package puts a `pythia` command on your `PATH`, so you can query a
+data space from anywhere:
+
+```bash
+# Install globally in an isolated environment (uv) — or use pipx
+uv tool install 'pythia-edc[all]'
+
+# Point it at your consumer connector + providers, then ask
+export PYTHIA_MANAGEMENT_URL="http://localhost:29193/management"
+export PYTHIA_PROVIDERS='[{"dsp": "http://localhost:19194/protocol/2025-1", "id": "provider"}]'
+
+pythia ask "CO2 emissions for German automotive suppliers 2023"
+pythia ask "quarterly SVHC reports" --verify-trust --json
+```
+
+Connection settings are read from `PYTHIA_*` environment variables (see
+`pythia.config.ConnectorConfig`); `--management-url` and `--provider ID DSP`
+(repeatable) override them per invocation. Run `pythia ask --help` for all options.
+
+> The repo's `./demo ask` is the zero-config local playground; `pythia ask` is the
+> same query path pointed at real connectors you configure.
+
 ## MCP server
 
 ```bash

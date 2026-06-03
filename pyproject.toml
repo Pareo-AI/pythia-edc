@@ -60,6 +60,7 @@ dev = [
 ]
 
 [project.scripts]
+pythia = "pythia.cli:main"
 pythia-mcp = "pythia.mcp:main"
 
 [project.urls]
