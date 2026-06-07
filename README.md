@@ -190,7 +190,7 @@ FederatedCatalog or a self-description convention).
 
 ## Prerequisites
 
-- Python 3.11+, running EDC consumer + provider connectors
+- Python 3.13+, running EDC consumer + provider connectors
 - `sentence-transformers` for `ds.ask()` (offline, `ibm-granite/granite-embedding-97m-multilingual-r2`, ~130MB, multilingual)
 
 The local end-to-end demo additionally needs Docker and a checkout of the
