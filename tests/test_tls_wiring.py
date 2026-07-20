@@ -16,10 +16,23 @@ from pythia.transfer import TransferController
 
 
 class _FakeResponse:
+    """Doubles as a streamed response (fetch_data uses client.stream())."""
+
     def __init__(self, content: bytes = b"payload") -> None:
         self.content = content
+        self.headers: dict = {}
+        self.status_code = 200
 
     def raise_for_status(self) -> None:
+        return None
+
+    async def aiter_bytes(self):
+        yield self.content
+
+    async def __aenter__(self) -> _FakeResponse:
+        return self
+
+    async def __aexit__(self, *args: object) -> None:
         return None
 
 
@@ -31,10 +44,7 @@ class _RecordingClient:
     def __init__(self, *args: object, **kwargs: object) -> None:
         type(self).last_kwargs = kwargs
 
-    async def get(self, *args: object, **kwargs: object) -> _FakeResponse:
-        return _FakeResponse()
-
-    async def post(self, *args: object, **kwargs: object) -> _FakeResponse:
+    def stream(self, *args: object, **kwargs: object) -> _FakeResponse:
         return _FakeResponse()
 
     async def aclose(self) -> None:

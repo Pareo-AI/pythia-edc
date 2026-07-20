@@ -9,7 +9,7 @@
 #   ./demo verify            # full gate
 #   ./demo verify -k beat1   # extra args are forwarded to the smoke pytest
 #
-# Prerequisites: the EDC sample JARs must be built (see `./demo up`). Ollama is
+# Prerequisites: the EDC sample JARs must be built (see `./demo up`). LM Studio is
 # optional — the synthesis beat skips (does not fail) if it is not running.
 set -euo pipefail
 
@@ -18,7 +18,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
 EXTRAS=(--extra dev --extra ask --extra trust --extra mcp)
-OLLAMA_URL="${OLLAMA_URL:-http://localhost:11434}"
+LMSTUDIO_URL="${LMSTUDIO_URL:-http://localhost:1234/v1}"
 
 log()  { echo "[verify] $*"; }
 fail() { echo "[verify] FAIL: $*" >&2; exit 1; }
@@ -42,10 +42,10 @@ log "Stage 1 passed."
 
 # ── Stage 2: bring up the local demo stack ────────────────────────────────────
 log "Stage 2/3 — starting demo stack ..."
-if curl -sf "$OLLAMA_URL/api/tags" -o /dev/null 2>/dev/null; then
-    log "Ollama reachable — synthesis beat will run."
+if curl -sf "$LMSTUDIO_URL/models" -o /dev/null 2>/dev/null; then
+    log "LM Studio reachable — synthesis beat will run."
 else
-    log "Ollama NOT reachable at $OLLAMA_URL — synthesis beat will SKIP (not fail)."
+    log "LM Studio NOT reachable at $LMSTUDIO_URL — synthesis beat will SKIP (not fail)."
 fi
 stack_up=1
 bash "$SCRIPT_DIR/up.sh" || fail "demo up failed — stack did not come up"

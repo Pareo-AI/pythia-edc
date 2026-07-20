@@ -5,7 +5,7 @@ of structured ``TrustFailure``s. An Explainer only rephrases those — it never
 judges validity and never invents a reason. Two implementations:
 
 * ``TemplateExplainer`` — deterministic, offline, no model. Default.
-* ``LLMExplainer``      — richer prose via a local Ollama model. Opt-in.
+* ``LLMExplainer``      — richer prose via a local LM Studio model. Opt-in.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ import json
 from typing import Protocol, runtime_checkable
 
 from .errors import TrustFailure
-from .llm import OllamaClient
+from .llm import LMStudioClient
 
 _CONSTRAINT_TEMPLATES = {
     "MinCountConstraintComponent": "is missing required field '{path}'",
@@ -70,8 +70,8 @@ class LLMExplainer:
         "it has already been rejected. Only rephrase the given failures."
     )
 
-    def __init__(self, client: OllamaClient | None = None) -> None:
-        self._client = client or OllamaClient()
+    def __init__(self, client: LMStudioClient | None = None) -> None:
+        self._client = client or LMStudioClient()
         self._fallback = TemplateExplainer()
 
     async def explain(self, failures: list[TrustFailure], *, context: str = "") -> str:

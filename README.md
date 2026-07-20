@@ -124,11 +124,20 @@ export PYTHIA_PROVIDERS='[{"dsp": "http://localhost:19194/protocol/2025-1", "id"
 
 pythia ask "CO2 emissions for German automotive suppliers 2023"
 pythia ask "quarterly SVHC reports" --verify-trust --json
+
+# Inspect what a data space offers, without negotiating (mirrors the MCP
+# browse_catalog tool). Lists assets across all configured providers.
+pythia catalog
+pythia catalog --provider rheinmobil https://provider1.example/protocol/2025-1 --json
 ```
 
 Connection settings are read from `PYTHIA_*` environment variables (see
 `pythia.config.ConnectorConfig`); `--management-url` and `--provider ID DSP`
 (repeatable) override them per invocation. Run `pythia ask --help` for all options.
+
+Provider responses are streamed and capped at 100 MiB by default (a memory-DoS
+guard against a hostile connector); override with `PYTHIA_MAX_RESPONSE_BYTES` or
+the `max_response_bytes` kwarg on `DataSpace`.
 
 > The repo's `./demo ask` is the zero-config local playground; `pythia ask` is the
 > same query path pointed at real connectors you configure.
@@ -191,7 +200,8 @@ FederatedCatalog or a self-description convention).
 ## Prerequisites
 
 - Python 3.13+, running EDC consumer + provider connectors
-- `sentence-transformers` for `ds.ask()` (offline, `ibm-granite/granite-embedding-97m-multilingual-r2`, ~130MB, multilingual)
+- `sentence-transformers` for `ds.ask()` ranking (offline, `ibm-granite/granite-embedding-97m-multilingual-r2`, ~130MB, multilingual)
+- A local [LM Studio](https://lmstudio.ai) server for the **default** `ds.ask()` answer (the synthesized table) and the optional `LLMExplainer`. LM Studio exposes an OpenAI-compatible API at `http://localhost:1234/v1` (Developer → *Start Server*); load a model and Pythia will use it. Override the endpoint/model with `PYTHIA_LLM_BASE_URL` / `PYTHIA_LLM_MODEL`. Without it, `ds.ask()` still ranks, negotiates, and fetches — pass `raw=True` for the asset bytes, or the default `Answer` carries a `note` explaining the synthesizer was unreachable.
 
 The local end-to-end demo additionally needs Docker and a checkout of the
 [Eclipse EDC Samples](https://github.com/eclipse-edc/Samples) (point `EDC_SAMPLES_DIR` at it).

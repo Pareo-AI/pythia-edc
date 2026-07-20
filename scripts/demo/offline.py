@@ -1,6 +1,6 @@
 """Offline demo — exercises the Synthesizer and Explainer without any EDC connectors.
 
-Needs only a running Ollama (localhost:11434). Run:
+Needs only a running LM Studio server (localhost:1234). Run:
 
     ./demo offline
 """

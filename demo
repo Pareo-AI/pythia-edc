@@ -44,7 +44,7 @@ Pythia demo — usage: ./demo <command>
             DonauTech is intentionally untrusted; --no-verify-trust to disable)
   repl      Interactive query loop against the running stack.
   smoke     Run the live smoke beats only (stack must already be up: ./demo up).
-  offline   Run the no-EDC synth/explain demo (needs a local Ollama).
+  offline   Run the no-EDC synth/explain demo (needs a local LM Studio server).
 
 Config: any env var below can live in a profile file instead of the command
 line. ./demo loads ./demo.env by default; copy demo.env.example to get started,

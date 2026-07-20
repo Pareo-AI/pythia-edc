@@ -1,6 +1,6 @@
 [project]
 name = "pythia-edc"
-version = "0.2.0"
+version = "0.3.0"
 description = "Ask your Gaia-X data space in plain language. MCP-native Python SDK for Eclipse EDC."
 authors = [{ name = "Jonathan Kaleve", email = "jonathan@pareo.ai" }]
 readme = "README.md"
@@ -53,6 +53,7 @@ dev = [
     "pytest>=9.0",
     "pytest-asyncio>=1.4",
     "pytest-httpx>=0.36",
+    "pytest-cov>=6.0",
     "trustme>=1.2",
     "ruff>=0.15",
     "mypy>=2.1",
@@ -90,6 +91,15 @@ include = [
 asyncio_mode = "auto"
 testpaths = ["tests"]
 filterwarnings = ["ignore::DeprecationWarning:rdflib.*"]
+
+[tool.coverage.run]
+source = ["pythia"]
+branch = true
+
+[tool.coverage.report]
+# Live-model / live-EDC paths are exercised by opt-in tests (LM Studio, EDC_LIVE)
+# that skip in CI, so they read as uncovered; don't fail the build on them.
+show_missing = true
 
 [tool.ruff]
 line-length = 100

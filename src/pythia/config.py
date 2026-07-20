@@ -10,6 +10,13 @@ from dataclasses import dataclass, field
 _TRUE = {"1", "true", "yes", "on"}
 _FALSE = {"0", "false", "no", "off"}
 
+# Hard ceiling on any single HTTP response body Pythia will buffer into memory.
+# Provider catalog/data responses are attacker-controlled, so an unbounded read
+# is a memory-DoS vector; we stream and abort past this cap. 100 MiB is generous
+# for real datasets while still bounding a hostile connector. Override with
+# PYTHIA_MAX_RESPONSE_BYTES (or the max_response_bytes kwarg / config field).
+DEFAULT_MAX_RESPONSE_BYTES = 100 * 1024 * 1024
+
 
 def _env_bool(value: str | None, default: bool) -> bool:
     if value is None or value == "":
@@ -70,6 +77,7 @@ class ConnectorConfig:
     providers: list[dict] = field(default_factory=list)
     timeout: float = 30.0
     tls: TLSConfig = field(default_factory=TLSConfig)
+    max_response_bytes: int = DEFAULT_MAX_RESPONSE_BYTES
 
     @classmethod
     def from_env(cls, prefix: str = "PYTHIA_") -> ConnectorConfig:
@@ -83,4 +91,7 @@ class ConnectorConfig:
             providers=json.loads(os.environ.get(f"{prefix}PROVIDERS", "[]")),
             timeout=float(os.environ.get(f"{prefix}TIMEOUT", "30.0")),
             tls=TLSConfig.from_env(prefix),
+            max_response_bytes=int(
+                os.environ.get(f"{prefix}MAX_RESPONSE_BYTES", DEFAULT_MAX_RESPONSE_BYTES)
+            ),
         )

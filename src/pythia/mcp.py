@@ -125,6 +125,7 @@ def create_server(
             api_key_header=api_key_header,
             providers=providers_cfg,
             tls=tls,
+            max_response_bytes=env_cfg.max_response_bytes,
         ) as ds:
             if name == "ask_dataspace":
                 from pythia.synthesize import Answer

@@ -11,9 +11,9 @@ import re
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
-from .llm import OllamaClient
+from .llm import LMStudioClient
 
-_DEFAULT_SYNTH_MODEL = "gemma4:e4b"
+_DEFAULT_SYNTH_MODEL = "google/gemma-4-e4b"
 
 _SYSTEM_PROMPT = (
     "You are a data extractor. You are given a user query and one or more data payloads "
@@ -85,8 +85,8 @@ def _strip_fences(text: str) -> str:
 
 
 class LLMSynthesizer:
-    def __init__(self, client: OllamaClient | None = None) -> None:
-        self._client = client or OllamaClient(model=_DEFAULT_SYNTH_MODEL)
+    def __init__(self, client: LMStudioClient | None = None) -> None:
+        self._client = client or LMStudioClient(model=_DEFAULT_SYNTH_MODEL)
 
     async def synthesize(self, query: str, sources: list[FetchedAsset]) -> Answer:
         provenance = [

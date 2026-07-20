@@ -29,12 +29,12 @@ from conftest import (
     PROVIDERS,
 )
 
-OLLAMA_URL = "http://localhost:11434"
+LMSTUDIO_URL = "http://localhost:1234/v1"
 
 
-def _ollama_up() -> bool:
+def _llm_up() -> bool:
     try:
-        return httpx.get(f"{OLLAMA_URL}/api/tags", timeout=2.0).status_code == 200
+        return httpx.get(f"{LMSTUDIO_URL}/models", timeout=2.0).status_code == 200
     except Exception:
         return False
 
@@ -161,7 +161,7 @@ async def test_beat5_mcp_ask_dataspace():
 
 CO2_QUERY = "CO2 emissions by German automotive maker 2023"
 
-@pytest.mark.skipif(not _ollama_up(), reason="Ollama not running on localhost:11434")
+@pytest.mark.skipif(not _llm_up(), reason="LM Studio not running on localhost:1234")
 @pytest.mark.asyncio
 async def test_beat6_synthesized_answer():
     """ds.ask() (render default) returns a populated Answer over the live EDC loop."""

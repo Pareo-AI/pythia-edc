@@ -33,7 +33,7 @@ from __future__ import annotations
 from ._http import EDCClient
 from .ask import DEFAULT_MIN_SCORE
 from .catalog import CatalogController
-from .config import ConnectorConfig, TLSConfig
+from .config import DEFAULT_MAX_RESPONSE_BYTES, ConnectorConfig, TLSConfig
 from .credential_source import CredentialSource, StaticCredentialSource
 from .errors import (
     CatalogError,
@@ -54,7 +54,7 @@ from .negotiate import NegotiationController
 from .synthesize import Answer, FetchedAsset, LLMSynthesizer, Synthesizer
 from .transfer import TransferController
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 __all__ = [
     "DataSpace",
     "PythiaError",
@@ -104,6 +104,9 @@ class DataSpace:
         timeout:          Per-request timeout in seconds (default 30.0)
         tls:              Explicit TLSConfig; overrides the flat verify_ssl/ca_bundle/
                           client_cert/client_key kwargs when provided.
+        max_response_bytes: Hard cap on any single response body buffered into
+                          memory (default 100 MiB). Guards against a hostile
+                          provider returning an oversized catalog/data payload.
     """
 
     def __init__(
@@ -119,6 +122,7 @@ class DataSpace:
         client_key: str | None = None,
         timeout: float = 30.0,
         tls: TLSConfig | None = None,
+        max_response_bytes: int = DEFAULT_MAX_RESPONSE_BYTES,
     ) -> None:
         if tls is None:
             tls = TLSConfig(
@@ -133,6 +137,7 @@ class DataSpace:
             api_key_header=api_key_header,
             timeout=timeout,
             tls=tls,
+            max_response_bytes=max_response_bytes,
         )
         self._v = api_version
         self._providers = providers or []
@@ -140,7 +145,9 @@ class DataSpace:
         # Sub-controllers
         self.catalog = CatalogController(self._http, api_version)
         self._negotiate = NegotiationController(self._http, api_version)
-        self._transfer = TransferController(self._http, api_version, tls=tls)
+        self._transfer = TransferController(
+            self._http, api_version, tls=tls, max_response_bytes=max_response_bytes
+        )
 
     @classmethod
     def from_env(cls, prefix: str = "PYTHIA_") -> DataSpace:
@@ -154,6 +161,7 @@ class DataSpace:
             providers=cfg.providers,
             timeout=cfg.timeout,
             tls=cfg.tls,
+            max_response_bytes=cfg.max_response_bytes,
         )
 
     # ── Core flow ──────────────────────────────────────────────────────────────

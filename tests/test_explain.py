@@ -2,8 +2,8 @@
 Tests for the Explainer slice: rendering structured trust rejections into prose.
 
 The verdict is decided by SHACL (trust.py); the Explainer only rephrases the
-structured TrustFailures. The LLMExplainer test runs against a local Ollama and
-skips if the daemon is unreachable.
+structured TrustFailures. The LLMExplainer test runs against a local LM Studio
+server and skips if it is unreachable.
 """
 
 import httpx
@@ -11,11 +11,11 @@ import pytest
 
 from pythia.errors import TrustError, TrustFailure
 from pythia.explain import LLMExplainer, TemplateExplainer
-from pythia.llm import OllamaClient
+from pythia.llm import LMStudioClient
 from pythia.trust import validate_offer
 
-OLLAMA_URL = "http://localhost:11434"
-TEST_MODEL = "gemma4:e4b"
+LMSTUDIO_URL = "http://localhost:1234/v1"
+TEST_MODEL = "google/gemma-4-e4b"
 
 BAD_OFFER_MISSING_TARGET = {
     "@id": "offer:abc:malformed",
@@ -23,9 +23,9 @@ BAD_OFFER_MISSING_TARGET = {
 }
 
 
-def _ollama_up() -> bool:
+def _llm_up() -> bool:
     try:
-        return httpx.get(f"{OLLAMA_URL}/api/tags", timeout=2.0).status_code == 200
+        return httpx.get(f"{LMSTUDIO_URL}/models", timeout=2.0).status_code == 200
     except Exception:
         return False
 
@@ -118,16 +118,16 @@ async def test_real_failure_renders_via_template():
     assert "target" in text
 
 
-# ── LLMExplainer: live local model (skips if Ollama down) ──────────────────────
+# ── LLMExplainer: live local model (skips if LM Studio down) ───────────────────
 
 
-@pytest.mark.skipif(not _ollama_up(), reason="Ollama not running on localhost:11434")
+@pytest.mark.skipif(not _llm_up(), reason="LM Studio not running on localhost:1234")
 @pytest.mark.asyncio
 async def test_llm_explainer_live():
     with pytest.raises(TrustError) as exc:
         validate_offer(BAD_OFFER_MISSING_TARGET)
 
-    explainer = LLMExplainer(OllamaClient(model=TEST_MODEL))
+    explainer = LLMExplainer(LMStudioClient(model=TEST_MODEL))
     text = await explainer.explain(exc.value.failures, context="a CO2 emissions offer")
 
     assert isinstance(text, str) and text.strip()
@@ -137,7 +137,7 @@ async def test_llm_explainer_live():
 @pytest.mark.asyncio
 async def test_llm_explainer_falls_back_when_daemon_down():
     """If the model call fails, fall back to the deterministic template — never block."""
-    explainer = LLMExplainer(OllamaClient(base_url="http://localhost:1", model=TEST_MODEL))
+    explainer = LLMExplainer(LMStudioClient(base_url="http://localhost:1", model=TEST_MODEL))
     failures = [TrustFailure(constraint="MinCountConstraintComponent", result_path="target")]
     text = await explainer.explain(failures, context="x")
     assert "missing required field 'target'" in text

@@ -8,7 +8,10 @@ Tests cover:
 - EDR with namespace-prefixed keys
 - EDR missing endpoint raises EDRError
 - fetch_data uses correct Authorization header
+- fetch_data streams and enforces the response-size cap
 """
+
+from __future__ import annotations
 
 from unittest.mock import AsyncMock, patch
 
@@ -157,31 +160,112 @@ async def test_request_body_structure(mock_client):
     assert body["transferType"] == "HttpData-PULL"
 
 
+# ── fetch_data: streaming, auth header, and the response-size cap ─────────────
+
+
+class _FakeStream:
+    """Minimal async-streaming httpx.Response stand-in for fetch_data tests."""
+
+    def __init__(self, chunks: list[bytes], headers: dict | None = None) -> None:
+        self._chunks = chunks
+        self.headers = headers if headers is not None else {}
+        self.status_code = 200
+
+    def raise_for_status(self) -> None:
+        pass
+
+    async def aiter_bytes(self):
+        for chunk in self._chunks:
+            yield chunk
+
+    async def __aenter__(self) -> _FakeStream:
+        return self
+
+    async def __aexit__(self, *args: object) -> bool:
+        return False
+
+
+class _FakeStreamClient:
+    """Stands in for httpx.AsyncClient; records the last stream() call."""
+
+    last_call: tuple | None = None
+
+    def __init__(self, chunks: list[bytes], headers: dict | None = None) -> None:
+        self._chunks = chunks
+        self._headers = headers
+
+    def __call__(self, *args: object, **kwargs: object) -> _FakeStreamClient:
+        return self  # construction: httpx.AsyncClient(...) → self
+
+    async def __aenter__(self) -> _FakeStreamClient:
+        return self
+
+    async def __aexit__(self, *args: object) -> bool:
+        return False
+
+    def stream(self, method: str, url: str, headers: dict | None = None) -> _FakeStream:
+        type(self).last_call = (method, url, headers)
+        return _FakeStream(self._chunks, self._headers)
+
+
 @pytest.mark.asyncio
 async def test_fetch_data_uses_auth_header():
-    """fetch_data sends Authorization header from EDR token."""
-
+    """fetch_data streams and sends the Authorization header from the EDR token."""
     from pythia.models import EDRToken
 
-    edr = EDRToken(
-        endpoint="http://provider:19291/public",
-        authorization="eyJhbGci.test",
+    edr = EDRToken(endpoint="http://provider:19291/public", authorization="eyJhbGci.test")
+    ctrl = TransferController(AsyncMock(spec=EDCClient))
+    fake = _FakeStreamClient([b'{"data', b'":1}'], headers={"Content-Length": "10"})
+
+    with patch("httpx.AsyncClient", fake):
+        data = await ctrl.fetch_data(edr)
+
+    assert data == b'{"data":1}'
+    assert _FakeStreamClient.last_call == (
+        "GET",
+        "http://provider:19291/public",
+        {"Authorization": "eyJhbGci.test"},
     )
 
-    ctrl = TransferController(AsyncMock(spec=EDCClient))
-    with patch("httpx.AsyncClient") as mock_cls:
-        mock_http = AsyncMock()
-        mock_http.__aenter__ = AsyncMock(return_value=mock_http)
-        mock_http.__aexit__ = AsyncMock(return_value=False)
-        resp = AsyncMock()
-        resp.content = b'{"data":1}'
-        resp.raise_for_status = lambda: None
-        mock_http.get = AsyncMock(return_value=resp)
-        mock_cls.return_value = mock_http
 
-        data = await ctrl.fetch_data(edr)
-        assert data == b'{"data":1}'
-        mock_http.get.assert_called_once_with(
-            "http://provider:19291/public",
-            headers={"Authorization": "eyJhbGci.test"},
-        )
+@pytest.mark.asyncio
+async def test_fetch_data_aborts_on_streamed_overflow():
+    """A body streaming past the cap raises EDRError (no declared Content-Length)."""
+    from pythia.models import EDRToken
+
+    edr = EDRToken(endpoint="http://provider/data", authorization="tok")
+    ctrl = TransferController(AsyncMock(spec=EDCClient), max_response_bytes=8)
+    # Three 4-byte chunks = 12 bytes > 8-byte cap; no Content-Length header.
+    fake = _FakeStreamClient([b"aaaa", b"bbbb", b"cccc"], headers={})
+
+    with patch("httpx.AsyncClient", fake):
+        with pytest.raises(EDRError, match="exceeded the 8-byte cap"):
+            await ctrl.fetch_data(edr)
+
+
+@pytest.mark.asyncio
+async def test_fetch_data_fails_fast_on_declared_length():
+    """A Content-Length over the cap is rejected before any body is read."""
+    from pythia.models import EDRToken
+
+    edr = EDRToken(endpoint="http://provider/data", authorization="tok")
+    ctrl = TransferController(AsyncMock(spec=EDCClient), max_response_bytes=8)
+    fake = _FakeStreamClient([b"x"], headers={"Content-Length": "1000000"})
+
+    with patch("httpx.AsyncClient", fake):
+        with pytest.raises(EDRError, match="declares 1000000 bytes"):
+            await ctrl.fetch_data(edr)
+
+
+@pytest.mark.asyncio
+async def test_fetch_data_per_call_cap_override():
+    """max_bytes on the call overrides the controller default."""
+    from pythia.models import EDRToken
+
+    edr = EDRToken(endpoint="http://provider/data", authorization="tok")
+    ctrl = TransferController(AsyncMock(spec=EDCClient), max_response_bytes=1024)
+    fake = _FakeStreamClient([b"aaaa", b"bbbb"], headers={})
+
+    with patch("httpx.AsyncClient", fake):
+        with pytest.raises(EDRError, match="exceeded the 4-byte cap"):
+            await ctrl.fetch_data(edr, max_bytes=4)

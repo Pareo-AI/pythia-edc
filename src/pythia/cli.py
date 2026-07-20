@@ -31,7 +31,7 @@ from .synthesize import Answer
 def _build_dataspace(args: argparse.Namespace) -> DataSpace:
     """Build a DataSpace from the environment, with CLI flags taking precedence."""
     cfg = ConnectorConfig.from_env()
-    providers = [{"id": pid, "dsp": dsp} for pid, dsp in (args.provider or [])] or cfg.providers
+    providers = _resolve_providers(args, cfg)
     return DataSpace(
         management_url=args.management_url or cfg.management_url,
         api_key=cfg.api_key,
@@ -40,6 +40,7 @@ def _build_dataspace(args: argparse.Namespace) -> DataSpace:
         providers=providers,
         timeout=cfg.timeout,
         tls=cfg.tls,
+        max_response_bytes=cfg.max_response_bytes,
     )
 
 
@@ -86,6 +87,90 @@ def _cmd_ask(args: argparse.Namespace) -> int:
     except ImportError as exc:  # missing optional extra (e.g. pythia-edc[ask])
         print(f"error: {exc}", file=sys.stderr)
         return 2
+    except PythiaError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+
+def _resolve_providers(args: argparse.Namespace, cfg: ConnectorConfig) -> list[dict]:
+    """Providers from --provider flags, else $PYTHIA_PROVIDERS."""
+    return [{"id": pid, "dsp": dsp} for pid, dsp in (args.provider or [])] or cfg.providers
+
+
+def _asset_dict(asset) -> dict:  # type: ignore[no-untyped-def]
+    return {
+        "id": asset.id,
+        "title": asset.title,
+        "description": asset.description,
+        "keywords": asset.keywords,
+        "content_type": asset.content_type,
+        "offers": len(asset.offers),
+    }
+
+
+def _render_catalogs(results: list[dict]) -> str:
+    lines: list[str] = []
+    for entry in results:
+        header = f"## {entry['provider_id']} ({entry['provider_dsp']})"
+        if entry.get("error"):
+            lines.append(f"{header} — ERROR: {entry['error']}")
+            continue
+        assets = entry["assets"]
+        lines.append(header)
+        lines.append(f"Assets: {len(assets)}")
+        for a in assets:
+            lines.append(f"\n### {a['title'] or a['id']}")
+            lines.append(f"- id: {a['id']}")
+            if a["description"]:
+                lines.append(f"- description: {a['description']}")
+            if a["keywords"]:
+                lines.append(f"- keywords: {', '.join(a['keywords'])}")
+            if a["content_type"]:
+                lines.append(f"- content-type: {a['content_type']}")
+            lines.append(f"- offers: {a['offers']}")
+        lines.append("")
+    return "\n".join(lines).rstrip()
+
+
+def _cmd_catalog(args: argparse.Namespace) -> int:
+    async def run() -> int:
+        cfg = ConnectorConfig.from_env()
+        providers = _resolve_providers(args, cfg)
+        if not providers:
+            print(
+                "error: no providers configured. Pass --provider ID DSP or set "
+                "PYTHIA_PROVIDERS.",
+                file=sys.stderr,
+            )
+            return 2
+
+        results: list[dict] = []
+        async with _build_dataspace(args) as ds:
+            for p in providers:
+                try:
+                    cat = await ds.catalog.query(provider_dsp=p["dsp"], provider_id=p["id"])
+                    results.append(
+                        {
+                            "provider_id": cat.provider_id,
+                            "provider_dsp": cat.provider_dsp,
+                            "assets": [_asset_dict(a) for a in cat.assets],
+                        }
+                    )
+                except PythiaError as exc:
+                    results.append(
+                        {"provider_id": p["id"], "provider_dsp": p["dsp"], "error": str(exc)}
+                    )
+
+        if args.json:
+            print(json.dumps(results, indent=2, ensure_ascii=False))
+        else:
+            print(_render_catalogs(results))
+
+        # Success if at least one provider's catalog was retrieved.
+        return 0 if any("assets" in r for r in results) else 1
+
+    try:
+        return asyncio.run(run())
     except PythiaError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
@@ -143,6 +228,24 @@ def build_parser() -> argparse.ArgumentParser:
         "--timeout", type=float, default=30.0, help="Per-provider timeout in seconds (default: 30)"
     )
     ask.set_defaults(func=_cmd_ask)
+
+    catalog = sub.add_parser(
+        "catalog",
+        help="List assets available across providers (no negotiation)",
+    )
+    catalog.add_argument(
+        "--management-url",
+        help="Consumer connector Management API URL (default: $PYTHIA_MANAGEMENT_URL)",
+    )
+    catalog.add_argument(
+        "--provider",
+        nargs=2,
+        action="append",
+        metavar=("ID", "DSP"),
+        help="A provider to query (repeatable). Overrides $PYTHIA_PROVIDERS.",
+    )
+    catalog.add_argument("--json", action="store_true", help="Emit the catalog as JSON")
+    catalog.set_defaults(func=_cmd_catalog)
 
     mcp = sub.add_parser("mcp", help="Run the Pythia MCP server (stdio)")
     mcp.set_defaults(func=_cmd_mcp)

@@ -15,7 +15,7 @@ import asyncio
 import httpx
 
 from ._http import EDCClient
-from .config import TLSConfig
+from .config import DEFAULT_MAX_RESPONSE_BYTES, TLSConfig
 from .errors import EDRError, TransferError, TransferTimeout
 from .models import EDC_CONTEXT, PROTOCOL, EDRToken, TransferState
 
@@ -26,10 +26,12 @@ class TransferController:
         client: EDCClient,
         api_version: str = "v3",
         tls: TLSConfig | None = None,
+        max_response_bytes: int = DEFAULT_MAX_RESPONSE_BYTES,
     ) -> None:
         self._c = client
         self._v = api_version
         self._tls = tls or TLSConfig()
+        self._max_bytes = max_response_bytes
 
     async def start(
         self,
@@ -132,22 +134,55 @@ class TransferController:
             endpoint_type=data.get("endpointType"),
         )
 
-    async def fetch_data(self, edr: EDRToken, path: str = "") -> bytes:
+    async def fetch_data(
+        self, edr: EDRToken, path: str = "", max_bytes: int | None = None
+    ) -> bytes:
         """
         Retrieve data from provider using EDR token.
 
+        The provider is the untrusted counterparty, so the response is streamed
+        and aborted if it exceeds ``max_bytes`` (defaults to the controller's
+        ``max_response_bytes``) — an unbounded read would let a hostile connector
+        exhaust consumer memory.
+
         Args:
-            edr:  EDR token from edr()
-            path: Optional path suffix after the endpoint URL
+            edr:       EDR token from edr()
+            path:      Optional path suffix after the endpoint URL
+            max_bytes: Per-call override of the response-size cap
 
         Returns:
             Raw response bytes
+
+        Raises:
+            EDRError: the provider response exceeds the size cap
         """
+        cap = max_bytes if max_bytes is not None else self._max_bytes
         url = edr.endpoint.rstrip("/")
         if path:
             url = f"{url}/{path.lstrip('/')}"
 
         async with httpx.AsyncClient(timeout=30.0, **self._tls.httpx_kwargs()) as client:
-            resp = await client.get(url, headers=edr.headers)
-            resp.raise_for_status()
-            return resp.content
+            async with client.stream("GET", url, headers=edr.headers) as resp:
+                resp.raise_for_status()
+
+                declared = resp.headers.get("Content-Length")
+                if declared is not None:
+                    try:
+                        if int(declared) > cap:
+                            raise EDRError(
+                                f"provider data from {url} declares {declared} bytes, "
+                                f"over the {cap}-byte cap"
+                            )
+                    except ValueError:
+                        pass  # unparseable header — fall through to the streamed check
+
+                chunks: list[bytes] = []
+                total = 0
+                async for chunk in resp.aiter_bytes():
+                    total += len(chunk)
+                    if total > cap:
+                        raise EDRError(
+                            f"provider data from {url} exceeded the {cap}-byte cap"
+                        )
+                    chunks.append(chunk)
+                return b"".join(chunks)

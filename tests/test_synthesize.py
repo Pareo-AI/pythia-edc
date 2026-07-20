@@ -2,7 +2,7 @@
 Tests for the Synthesizer slice: fetching top-k assets and synthesizing a tabular answer.
 
 The LLM is a renderer over provided data; it never invents rows or numbers.
-Live tests against a local model skip if Ollama is unreachable.
+Live tests against a local model skip if LM Studio is unreachable.
 """
 
 from __future__ import annotations
@@ -13,16 +13,16 @@ from unittest.mock import AsyncMock, MagicMock
 import httpx
 import pytest
 
-from pythia.llm import OllamaClient
+from pythia.llm import LMStudioClient
 from pythia.synthesize import Answer, FetchedAsset, LLMSynthesizer
 
-OLLAMA_URL = "http://localhost:11434"
-LIVE_MODEL = "gemma4:e4b"
+LMSTUDIO_URL = "http://localhost:1234/v1"
+LIVE_MODEL = "google/gemma-4-e4b"
 
 
-def _ollama_up() -> bool:
+def _llm_up() -> bool:
     try:
-        return httpx.get(f"{OLLAMA_URL}/api/tags", timeout=2.0).status_code == 200
+        return httpx.get(f"{LMSTUDIO_URL}/models", timeout=2.0).status_code == 200
     except Exception:
         return False
 
@@ -74,11 +74,11 @@ def test_to_markdown_provenance_footer():
     assert "prov-A" in md
 
 
-# ── LLMSynthesizer with stubbed OllamaClient ──────────────────────────────────
+# ── LLMSynthesizer with stubbed LMStudioClient ────────────────────────────────
 
 
 class _StubClient:
-    """OllamaClient stub — returns a fixed response without hitting the network."""
+    """LMStudioClient stub — returns a fixed response without hitting the network."""
 
     def __init__(self, response: str) -> None:
         self._response = response
@@ -138,7 +138,7 @@ async def test_llm_synthesizer_json_in_markdown_fences():
 
 @pytest.mark.asyncio
 async def test_llm_synthesizer_model_unreachable_does_not_crash():
-    """If the model call raises (e.g. Ollama down), return a noted Answer, never crash."""
+    """If the model call raises (e.g. LM Studio down), return a noted Answer, never crash."""
 
     class _DeadClient:
         async def generate(self, prompt: str, system: str | None = None) -> str:
@@ -358,7 +358,7 @@ async def test_ask_raw_returns_bytes():
 # ── Live test against a local model ───────────────────────────────────────────
 
 
-@pytest.mark.skipif(not _ollama_up(), reason="Ollama not running on localhost:11434")
+@pytest.mark.skipif(not _llm_up(), reason="LM Studio not running on localhost:1234")
 @pytest.mark.asyncio
 async def test_llm_synthesizer_live():
     """Live test: a local model synthesizes two JSON payloads into a tabular answer."""
@@ -377,7 +377,7 @@ async def test_llm_synthesizer_live():
         ),
     ]
 
-    client = OllamaClient(model=LIVE_MODEL, timeout=120.0)
+    client = LMStudioClient(model=LIVE_MODEL, timeout=120.0)
     synth = LLMSynthesizer(client=client)
     answer = await synth.synthesize("CO2 emissions by car maker", sources)
 
