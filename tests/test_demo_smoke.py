@@ -103,11 +103,12 @@ def test_beat3_trust_rejects_bad_offer():
 
 # ── Beats 4 & 5: MCP tool surface ────────────────────────────────────────────
 #
-# Approach: create_server() registers a CallToolRequest handler via the
-# @server.call_tool() decorator.  We retrieve it from server.request_handlers
-# and call it directly with a CallToolRequest, bypassing the stdio transport.
-# This exercises the identical code path the MCP server runs when an AI client
-# invokes a tool, without requiring a running MCP process or stdio wiring.
+# Approach: create_server() registers a "tools/call" handler on the lowlevel
+# Server.  We retrieve it with get_request_handler() and call it directly with
+# CallToolRequestParams, bypassing the stdio transport.  This exercises the
+# identical code path the MCP server runs when an AI client invokes a tool,
+# without requiring a running MCP process or stdio wiring.  The handler ignores
+# its ServerRequestContext, so None stands in for it here.
 
 async def _mcp_call(tool_name: str, arguments: dict) -> str:
     """Invoke an MCP tool via the registered handler; return concatenated text."""
@@ -120,13 +121,12 @@ async def _mcp_call(tool_name: str, arguments: dict) -> str:
         api_key=API_KEY,
         providers=_PROVIDERS,
     )
-    handler = server.request_handlers[mcp.types.CallToolRequest]
-    req = mcp.types.CallToolRequest(
-        params=mcp.types.CallToolRequestParams(name=tool_name, arguments=arguments)
-    )
-    result = await handler(req)
-    # result is a ServerResult wrapping CallToolResult(content=[TextContent, ...])
-    return "\n".join(item.text for item in result.root.content)
+    entry = server.get_request_handler("tools/call")
+    assert entry is not None, "server did not register a tools/call handler"
+    params = mcp.types.CallToolRequestParams(name=tool_name, arguments=arguments)
+    result = await entry.handler(None, params)
+    # result is a CallToolResult(content=[TextContent, ...])
+    return "\n".join(item.text for item in result.content)
 
 
 @pytest.mark.asyncio

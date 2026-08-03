@@ -18,8 +18,13 @@ Requires: pip install pythia-edc[mcp]
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 from pythia import DataSpace
 from pythia.config import ConnectorConfig, TLSConfig
+
+if TYPE_CHECKING:
+    from mcp.server import Server
 
 
 def create_server(
@@ -31,12 +36,18 @@ def create_server(
     ca_bundle: str | None = None,
     client_cert: str | None = None,
     client_key: str | None = None,
-) -> "mcp.Server":  # type: ignore[name-defined]  # noqa: F821,UP037
+) -> Server[Any]:
     try:
-        import mcp
         import mcp.server.stdio  # noqa: F401  (checked for availability, used in main())
-        from mcp.server import Server
-        from mcp.types import TextContent, Tool
+        from mcp.server import Server, ServerRequestContext
+        from mcp.types import (
+            CallToolRequestParams,
+            CallToolResult,
+            ListToolsResult,
+            PaginatedRequestParams,
+            TextContent,
+            Tool,
+        )
     except ImportError as exc:
         raise ImportError(
             "MCP server requires mcp package: pip install 'pythia-edc[mcp]'"
@@ -57,11 +68,11 @@ def create_server(
         client_key=client_key or env_cfg.tls.client_key,
     )
 
-    server = Server("pythia-edc")
-
-    @server.list_tools()
-    async def list_tools() -> list[Tool]:
-        return [
+    async def list_tools(
+        ctx: ServerRequestContext[Any],
+        params: PaginatedRequestParams | None,
+    ) -> ListToolsResult:
+        tools = [
             Tool(
                 name="ask_dataspace",
                 description=(
@@ -70,7 +81,7 @@ def create_server(
                     "similarity, negotiates a contract, and returns the data. "
                     "No asset IDs, provider URLs, or ODRL knowledge required."
                 ),
-                inputSchema={
+                input_schema={
                     "type": "object",
                     "properties": {
                         "query": {
@@ -101,7 +112,7 @@ def create_server(
                     "List all data assets available across registered providers. "
                     "Returns asset IDs, titles, descriptions, and provider info."
                 ),
-                inputSchema={
+                input_schema={
                     "type": "object",
                     "properties": {
                         "provider_dsp": {
@@ -116,9 +127,19 @@ def create_server(
                 },
             ),
         ]
+        return ListToolsResult(tools=tools)
 
-    @server.call_tool()
-    async def call_tool(name: str, arguments: dict) -> list[TextContent]:
+    def _text(text: str, *, is_error: bool = False) -> CallToolResult:
+        return CallToolResult(
+            content=[TextContent(type="text", text=text)], is_error=is_error
+        )
+
+    async def call_tool(
+        ctx: ServerRequestContext[Any],
+        params: CallToolRequestParams,
+    ) -> CallToolResult:
+        name = params.name
+        arguments = params.arguments or {}
         async with DataSpace(
             management_url=mgmt_url,
             api_key=key,
@@ -135,14 +156,14 @@ def create_server(
                 do_raw = bool(arguments.get("raw", False))
                 result = await ds.ask(query=query, top_k=top_k, raw=do_raw)
                 if result is None:
-                    return [TextContent(type="text", text="No matching data found.")]
+                    return _text("No matching data found.")
                 if isinstance(result, Answer):
-                    return [TextContent(type="text", text=result.to_markdown())]
+                    return _text(result.to_markdown())
                 try:
                     text = result.decode("utf-8")
                 except UnicodeDecodeError:
                     text = f"[binary data, {len(result)} bytes]"
-                return [TextContent(type="text", text=text)]
+                return _text(text)
 
             elif name == "browse_catalog":
                 provider_dsp = arguments.get("provider_dsp")
@@ -154,10 +175,10 @@ def create_server(
                     providers_to_query = providers_cfg
 
                 if not providers_to_query:
-                    return [TextContent(
-                        type="text",
-                        text="No providers configured. Set PYTHIA_PROVIDERS env var."
-                    )]
+                    return _text(
+                        "No providers configured. Set PYTHIA_PROVIDERS env var.",
+                        is_error=True,
+                    )
 
                 output = []
                 for p in providers_to_query:
@@ -182,12 +203,16 @@ def create_server(
                     except Exception as e:
                         output.append(f"## Provider: {p['id']} — ERROR: {e}")
 
-                return [TextContent(type="text", text="\n".join(output))]
+                return _text("\n".join(output))
 
             else:
-                return [TextContent(type="text", text=f"Unknown tool: {name}")]
+                return _text(f"Unknown tool: {name}", is_error=True)
 
-    return server
+    return Server(
+        "pythia-edc",
+        on_list_tools=list_tools,
+        on_call_tool=call_tool,
+    )
 
 
 def main() -> None:
