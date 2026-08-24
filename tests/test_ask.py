@@ -111,6 +111,38 @@ def test_no_catalogs():
     assert ranked == []
 
 
+def test_min_score_threshold_still_separates():
+    """DEFAULT_MIN_SCORE must keep on-topic and off-topic queries on opposite sides.
+
+    The 0.82 threshold is calibrated against one embedding model's score
+    distribution, not derived from anything: ask.py records off-topic queries at
+    0.66-0.79 and on-topic ones at >=0.90. The other rank_assets tests only assert
+    ordering and score > 0.5, so a model or sentence-transformers upgrade that
+    compressed or shifted the scale would leave them all green while silently
+    turning every query into a match (or a miss). This pins the gap itself.
+    """
+    on_topic = [
+        "CO2 emissions German automotive",
+        "quarterly SVHC chemical substance reports",
+        "greenhouse gas output for car makers in Germany",
+        "energy consumption manufacturing sites",
+        "EU macroeconomic indicators",
+    ]
+    off_topic = ["pizza", "weather", "sourdough", "best holiday beaches"]
+
+    worst_on = min(rank_assets(q, [CATALOG])[0].score for q in on_topic)
+    best_off = max(rank_assets(q, [CATALOG])[0].score for q in off_topic)
+
+    assert worst_on >= DEFAULT_MIN_SCORE, (
+        f"on-topic query scored {worst_on:.4f}, below the {DEFAULT_MIN_SCORE} cutoff: "
+        "real matches would be reported as no-match"
+    )
+    assert best_off < DEFAULT_MIN_SCORE, (
+        f"off-topic query scored {best_off:.4f}, at or above the {DEFAULT_MIN_SCORE} cutoff: "
+        "unrelated queries would be answered with the nearest dataset"
+    )
+
+
 # ── AskController ──────────────────────────────────────────────────────────────
 
 @pytest.mark.asyncio
