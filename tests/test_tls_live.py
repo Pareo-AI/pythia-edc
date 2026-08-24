@@ -158,6 +158,13 @@ async def test_mtls_with_client_cert_succeeds(mtls_server, ca_bundle, client_cer
 
 async def test_mtls_without_client_cert_rejected(mtls_server, ca_bundle):
     client = EDCClient(management_url=mtls_server, tls=TLSConfig(ca_bundle=ca_bundle))
-    with pytest.raises(httpx.TransportError):
+    # The rejection here comes from the *server* (a TLSV13_ALERT_CERTIFICATE_REQUIRED
+    # alert), unlike test_default_verify_rejects_self_signed where the client itself
+    # refuses the peer. Whether that alert lands inside httpx's connect path, and so
+    # arrives wrapped as httpx.ConnectError, or after it, and so surfaces as the raw
+    # ssl.SSLError, depends on how the handshake interleaves with the server thread.
+    # Both mean the same thing, and httpx does not promise to wrap every SSL error, so
+    # asserting on TransportError alone made this test lose a race under CPU load.
+    with pytest.raises((httpx.TransportError, ssl.SSLError)):
         await client.get("/anything")
     await client.aclose()
