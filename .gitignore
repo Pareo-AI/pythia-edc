@@ -20,3 +20,7 @@ demo.*.env
 
 # Local-only material salvaged from the old copy; never published.
 /local-salvage/
+
+# The Eclipse EDC Samples checkout that `./demo up` builds its connector jars from. Half a
+# gigabyte of upstream source and fat jars; `up.sh` clones it here and EDC_SAMPLES_DIR overrides it.
+/.edc-samples/
