@@ -19,7 +19,7 @@ import asyncio
 
 from ._http import EDCClient
 from .errors import NegotiationError, NegotiationTimeout
-from .models import EDC_CONTEXT, PROTOCOL, NegotiationState
+from .models import EDC_CONTEXT, ODRL_CONTEXT, PROTOCOL, NegotiationState
 
 # States that are not terminal but may appear during negotiation
 _TRANSIENT_STATES = frozenset(
@@ -62,7 +62,7 @@ class NegotiationController:
             NegotiationTimeout: Did not reach FINALIZED within timeout
         """
         neg_policy = policy or {
-            "@context": "http://www.w3.org/ns/odrl.jsonld",
+            "@context": ODRL_CONTEXT,
             "@type": "Offer",
             "@id": offer_id,
             "assigner": provider_id,
