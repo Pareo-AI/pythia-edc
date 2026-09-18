@@ -10,6 +10,8 @@ EDC_NAMESPACE = "https://w3id.org/edc/v0.0.1/ns/"
 EDC_CONTEXT = {"@vocab": EDC_NAMESPACE}
 PROTOCOL = "dataspace-protocol-http:2025-1"
 
+ODRL_CONTEXT = "http://www.w3.org/ns/odrl.jsonld"
+
 
 def _edc(key: str) -> str:
     """Qualify a key with the EDC namespace for JSON-LD parsing."""
@@ -110,6 +112,25 @@ class Catalog(BaseModel):
             if asset.offers:
                 return asset, asset.offers[0]
         return None
+
+
+def negotiation_policy(offer: PolicyOffer, provider_id: str, asset_id: str) -> dict:
+    """Build the ODRL policy dict to negotiate an offer with.
+
+    ``DataSpace.negotiate()``'s default policy (built from just ``offer_id``/
+    ``asset_id`` when ``policy`` is omitted) omits the offer's own permission/
+    prohibition/obligation. A provider compares the agreement's policy against the
+    catalog offer's and terminates the negotiation when they differ ("Policy in the
+    contract agreement is not equal to the one in the contract offer"), so any
+    provider whose offer is not an empty allow-all needs its own raw policy passed
+    through instead of the default.
+    """
+    return {
+        "@context": ODRL_CONTEXT,
+        "assigner": provider_id,
+        "target": asset_id,
+        **offer.raw,
+    }
 
 
 # ── Negotiation models ─────────────────────────────────────────────────────────

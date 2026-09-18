@@ -26,7 +26,7 @@ import asyncio
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from .models import Catalog, CatalogAsset
+from .models import Catalog, CatalogAsset, negotiation_policy
 
 if TYPE_CHECKING:
     from . import DataSpace
@@ -352,6 +352,7 @@ class AskController:
                     provider_id=catalog.provider_id,
                     offer_id=offer.id,
                     asset_id=asset.id,
+                    policy=negotiation_policy(offer, catalog.provider_id, asset.id),
                     timeout=timeout,
                 )
                 data = await self.ds.fetch(
@@ -429,6 +430,7 @@ class AskController:
                     provider_id=catalog.provider_id,
                     offer_id=offer.id,
                     asset_id=asset.id,
+                    policy=negotiation_policy(offer, catalog.provider_id, asset.id),
                     timeout=timeout,
                 )
                 data = await self.ds.fetch(
