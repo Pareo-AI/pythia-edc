@@ -31,6 +31,7 @@ case "$cmd" in
     ask)     exec uv run --extra ask --extra trust --extra cli python "$DEMO_DIR/ask.py" "$@" ;;
     repl)    exec uv run --extra ask --extra trust --extra cli python "$DEMO_DIR/ask.py" --repl "$@" ;;
     offline) exec uv run --extra synth --extra explain python "$DEMO_DIR/offline.py" "$@" ;;
+    pareo)   exec uv run --extra trust python "$DEMO_DIR/pareo.py" "$@" ;;
     help|-h|--help|"")
         cat <<'EOF'
 Pythia demo — usage: ./demo <command>
@@ -45,6 +46,10 @@ Pythia demo — usage: ./demo <command>
   repl      Interactive query loop against the running stack.
   smoke     Run the live smoke beats only (stack must already be up: ./demo up).
   offline   Run the no-EDC synth/explain demo (needs a local LM Studio server).
+  pareo     Fetch the copper-alloy assets from kupferwerk, import/export them
+            through the local Pareo dev stack, and print the RoHS/REACH verdicts.
+            (needs PAREO_REPO checked out and its dev backend running; LM Studio
+            optional — skips its plain-language summary if not reachable)
 
 Config: any env var below can live in a profile file instead of the command
 line. ./demo loads ./demo.env by default; copy demo.env.example to get started,
