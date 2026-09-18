@@ -1,7 +1,9 @@
-"""Single source of truth for Pythia's CO2 demo data.
+"""Single source of truth for Pythia's demo data.
 
-Defines logical providers, each exposing CO2 emissions datasets that share one
-schema (GHG Protocol scope 1/2/3). Consumed by:
+Defines logical providers and the datasets each one exposes. Most datasets
+share the CO2 emissions schema (GHG Protocol scope 1/2/3, JSON); kupferwerk's
+are pre-authored Turtle (RDF) files served verbatim instead (see
+``Dataset.file_name``/``content_type``). Consumed by:
 
   - lib/mock_server.py  serves the JSON payloads over HTTP
   - lib/seed.py         derives EDC asset / catalog metadata
@@ -14,10 +16,12 @@ distinguished by their asset-id prefix and their mock-server URL path
 
 from __future__ import annotations
 
+import json
 import os
 from dataclasses import dataclass
 
 MOCK_BASE_URL = os.environ.get("PYTHIA_MOCK_BASE_URL", "http://localhost:9876")
+_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 UNIT = "tonnes CO2e"
 STANDARD = "GHG Protocol Corporate Standard"
 
@@ -72,6 +76,14 @@ class Dataset:
     description: str
     period: str
     rows: tuple[EmissionRow, ...]
+    # Override for datasets.asset_id() — set when the supplier's own file already
+    # declares the id a downstream consumer must match (e.g. an RDF `preg:assetId`).
+    # Unset datasets keep the derived "{provider.id}_{dataset.id}" id.
+    asset_id: str | None = None
+    # Non-JSON assets: content_type overrides the "application/json" default and
+    # file_name names a verbatim file under lib/data/ served instead of payload().
+    content_type: str = "application/json"
+    file_name: str | None = None
 
     def payload(self) -> dict:
         return {
@@ -173,6 +185,61 @@ PROVIDERS: tuple[Provider, ...] = (
             ),
         ),
     ),
+    # Turtle assets, not the shared CO2 JSON schema: three copper-alloy material
+    # compositions in PMDco / pareo-regulatory terms. Files are byte-for-byte
+    # copies of Pareo's pareo-regulatory ontology examples
+    # (backend/app/infrastructure/linked_data/ontology/examples/*.ttl) — a real
+    # supplier owns and republishes its own files, so a copy is correct here and
+    # keeps this repo runnable standalone.
+    Provider(
+        id="kupferwerk",
+        name="Kupferwerk Odenwald",
+        datasets=(
+            Dataset(
+                id="cuzn39pb3_composition",
+                name="Material Composition — CuZn39Pb3 (CW614N)",
+                description=(
+                    "Material composition of the leaded brass alloy CuZn39Pb3 (CW614N), as an "
+                    "RDF graph in PMDco / pareo-regulatory terms: copper, zinc and lead mass "
+                    "fractions plus a claimed RoHS Annex III exemption (6c) for the lead content. "
+                    "Published as a Turtle (text/turtle) linked-data asset, not JSON."
+                ),
+                period="current",
+                rows=(),
+                asset_id="asset-cuzn39pb3-composition",
+                content_type="text/turtle",
+                file_name="CuZn39Pb3.ttl",
+            ),
+            Dataset(
+                id="cuzn37_composition",
+                name="Material Composition — CuZn37 (CW508L)",
+                description=(
+                    "Material composition of the brass alloy CuZn37 (CW508L), as an RDF graph in "
+                    "PMDco / pareo-regulatory terms: copper and zinc mass fractions. Published as "
+                    "a Turtle (text/turtle) linked-data asset, not JSON."
+                ),
+                period="current",
+                rows=(),
+                asset_id="asset-cuzn37-composition",
+                content_type="text/turtle",
+                file_name="CuZn37.ttl",
+            ),
+            Dataset(
+                id="cusn6_composition",
+                name="Material Composition — CuSn6 (CW452K)",
+                description=(
+                    "Material composition of the tin bronze alloy CuSn6 (CW452K), as an RDF graph "
+                    "in PMDco / pareo-regulatory terms: copper, tin and phosphorus mass fractions. "
+                    "Published as a Turtle (text/turtle) linked-data asset, not JSON."
+                ),
+                period="current",
+                rows=(),
+                asset_id="asset-cusn6-composition",
+                content_type="text/turtle",
+                file_name="CuSn6.ttl",
+            ),
+        ),
+    ),
 )
 
 
@@ -186,7 +253,7 @@ def iter_datasets():
 
 
 def asset_id(provider: Provider, dataset: Dataset) -> str:
-    return f"{provider.id}_{dataset.id}"
+    return dataset.asset_id or f"{provider.id}_{dataset.id}"
 
 
 def mock_path(provider: Provider, dataset: Dataset) -> str:
@@ -197,12 +264,29 @@ def asset_url(provider: Provider, dataset: Dataset) -> str:
     return f"{MOCK_BASE_URL}/{mock_path(provider, dataset)}"
 
 
-def find_payload(path: str) -> dict | None:
-    """Look up a dataset payload by its mock path ('provider/dataset'). None if unknown."""
+def raw_bytes(dataset: Dataset) -> bytes:
+    """The dataset's asset bytes: its file's contents verbatim if file-backed
+    (``file_name`` set), else its JSON payload encoded as utf-8."""
+    if dataset.file_name is not None:
+        with open(os.path.join(_DATA_DIR, dataset.file_name), "rb") as f:
+            return f.read()
+    return json.dumps(dataset.payload()).encode("utf-8")
+
+
+def find_dataset(path: str) -> Dataset | None:
+    """Look up a dataset by its mock path ('provider/dataset'). None if unknown."""
     for provider, dataset in iter_datasets():
         if mock_path(provider, dataset) == path:
-            return dataset.payload()
+            return dataset
     return None
+
+
+def find_payload(path: str) -> dict | None:
+    """Look up a dataset's JSON payload by its mock path. None if unknown or file-backed."""
+    dataset = find_dataset(path)
+    if dataset is None or dataset.file_name is not None:
+        return None
+    return dataset.payload()
 
 
 def all_mock_paths() -> list[str]:

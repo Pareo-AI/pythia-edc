@@ -18,6 +18,7 @@ Port scheme (per provider index, consumer reserves the ``2`` block):
     index 0 → prefix 1 → 19191/19192/19193/19194/19291   (api/control/mgmt/dsp/public)
     index 1 → prefix 3 → 39191/.../39291
     index 2 → prefix 4 → 49191/.../49291
+    index 3 → prefix 5 → 59191/.../59291
     ...      (consumer connector keeps the 29191–29291 block)
 
 Provider 0 keeps the original 19xxx block so existing single-provider tooling

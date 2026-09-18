@@ -35,8 +35,13 @@ HEADERS = {
 POLICY_ID = "demo-permissive-policy"
 CONTRACT_DEF_ID = "demo-contract-all"
 
+# kupferwerk publishes a real ODRL "use" policy instead of the shared allow-all
+# above; every other provider keeps POLICY_ID unchanged.
+_USE_POLICY_PROVIDER_IDS = {"kupferwerk"}
+_USE_POLICY_ID = "kupferwerk-use-policy"
+
 # Assets are derived from the single source of truth (one logical provider per
-# tenant, all sharing the GHG Protocol scope 1/2/3 schema), served by mock_server.
+# tenant), served by mock_server.
 
 
 def _asset(provider, dataset) -> dict:
@@ -45,6 +50,7 @@ def _asset(provider, dataset) -> dict:
         "name": dataset.name,
         "description": dataset.description,
         "url": datasets.asset_url(provider, dataset),
+        "content_type": dataset.content_type,
     }
 
 
@@ -76,7 +82,7 @@ def seed_asset(client: httpx.Client, mgmt_url: str, asset: dict) -> bool:
         "properties": {
             "name": asset["name"],
             "description": asset["description"],
-            "contenttype": "application/json",
+            "contenttype": asset["content_type"],
         },
         "dataAddress": {
             "type": "HttpData",
@@ -89,40 +95,50 @@ def seed_asset(client: httpx.Client, mgmt_url: str, asset: dict) -> bool:
     return ok_or_die(r, f"asset:{asset['id']}")
 
 
-def seed_policy(client: httpx.Client, mgmt_url: str) -> bool:
+def _policy_for(provider_id: str | None) -> str:
+    """The policy id a connector for this provider should seed and reference.
+
+    kupferwerk gets a real ODRL "use" policy; every other provider (and the
+    legacy single-host mode, provider_id=None) keeps the shared allow-all.
+    """
+    return _USE_POLICY_ID if provider_id in _USE_POLICY_PROVIDER_IDS else POLICY_ID
+
+
+def seed_policy(client: httpx.Client, mgmt_url: str, policy_id: str) -> bool:
+    permission = [{"action": "use"}] if policy_id == _USE_POLICY_ID else []
     body = {
         "@context": {
             "@vocab": "https://w3id.org/edc/v0.0.1/ns/",
             "odrl": "http://www.w3.org/ns/odrl/2/",
         },
-        "@id": POLICY_ID,
+        "@id": policy_id,
         "policy": {
             "@context": "http://www.w3.org/ns/odrl.jsonld",
             "@type": "Set",
-            "permission": [],
+            "permission": permission,
             "prohibition": [],
             "obligation": [],
         },
     }
     r = client.post(f"{mgmt_url}/v3/policydefinitions", headers=HEADERS, json=body)
-    return ok_or_die(r, f"policy:{POLICY_ID}")
+    return ok_or_die(r, f"policy:{policy_id}")
 
 
-def seed_contract_definition(client: httpx.Client, mgmt_url: str) -> bool:
-    """One contract definition with empty assetsSelector — matches all assets."""
+def seed_contract_definition(client: httpx.Client, mgmt_url: str, policy_id: str) -> bool:
+    """One contract definition with empty assetsSelector — matches all assets on this connector."""
     body = {
         "@context": {"@vocab": "https://w3id.org/edc/v0.0.1/ns/"},
         "@id": CONTRACT_DEF_ID,
-        "accessPolicyId": POLICY_ID,
-        "contractPolicyId": POLICY_ID,
+        "accessPolicyId": policy_id,
+        "contractPolicyId": policy_id,
         "assetsSelector": [],
     }
     r = client.post(f"{mgmt_url}/v3/contractdefinitions", headers=HEADERS, json=body)
     return ok_or_die(r, f"contractdefinition:{CONTRACT_DEF_ID}")
 
 
-def seed_one(client: httpx.Client, mgmt_url: str, assets: list[dict]) -> bool:
-    """Seed a single connector with the given assets + shared policy + contract def."""
+def seed_one(client: httpx.Client, mgmt_url: str, assets: list[dict], policy_id: str) -> bool:
+    """Seed a single connector with the given assets + one policy + contract def."""
     all_ok = True
 
     print(f"--- Seeding {len(assets)} asset(s) → {mgmt_url} ---")
@@ -130,12 +146,12 @@ def seed_one(client: httpx.Client, mgmt_url: str, assets: list[dict]) -> bool:
         if not seed_asset(client, mgmt_url, asset):
             all_ok = False
 
-    print("  - policy")
-    if not seed_policy(client, mgmt_url):
+    print(f"  - policy ({policy_id})")
+    if not seed_policy(client, mgmt_url, policy_id):
         all_ok = False
 
     print("  - contract definition")
-    if not seed_contract_definition(client, mgmt_url):
+    if not seed_contract_definition(client, mgmt_url, policy_id):
         all_ok = False
 
     return all_ok
@@ -175,7 +191,8 @@ def main():
                     file=sys.stderr,
                 )
                 continue
-            if not seed_one(client, target["mgmt"], assets):
+            policy_id = _policy_for(target.get("id"))
+            if not seed_one(client, target["mgmt"], assets, policy_id):
                 all_ok = False
             seeded_ids += [a["id"] for a in assets]
             print()

@@ -80,7 +80,7 @@ QUERY = "CO2 emissions German automotive"
 
 def test_credential_map_covers_all_demo_providers():
     cmap = credentials.credential_map()
-    assert set(cmap) == {"rheinmobil", "zugspitze", "donautech"}
+    assert set(cmap) == {"rheinmobil", "zugspitze", "donautech", "kupferwerk"}
 
 
 def test_trusted_providers_verify():

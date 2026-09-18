@@ -7,12 +7,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PIDS_FILE="/tmp/pythia-demo.pids"
 
 # Provider ports come from topology.py (one connector per logical provider);
-# fall back to the known 3-provider block if topology can't be read. Always
+# fall back to the known 4-provider block if topology can't be read. Always
 # include the consumer block (29xxx).
 CONSUMER_PORTS="29191 29192 29193 29194 29291"
 _PROVIDER_PORTS="$(python3 "$SCRIPT_DIR/lib/topology.py" --print-ports 2>/dev/null || true)"
 if [ -z "$_PROVIDER_PORTS" ]; then
-    _PROVIDER_PORTS="19191 19192 19193 19194 19291 39191 39192 39193 39194 39291 49191 49192 49193 49194 49291"
+    _PROVIDER_PORTS="19191 19192 19193 19194 19291 39191 39192 39193 39194 39291 49191 49192 49193 49194 49291 59191 59192 59193 59194 59291"
 fi
 CONNECTOR_PORTS="${CONNECTOR_PORTS:-$_PROVIDER_PORTS $CONSUMER_PORTS}"
 MOCK_PORT="${MOCK_PORT:-9876}"

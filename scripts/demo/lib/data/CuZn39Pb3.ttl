@@ -1,0 +1,60 @@
+@prefix ex: <https://pareo.ai/data/example/> .
+@prefix preg: <https://pareo.ai/ontology/regulatory/> .
+@prefix pmd: <https://w3id.org/pmd/co/> .
+@prefix obo: <http://purl.obolibrary.org/obo/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+ex:CuZn39Pb3 a pmd:PMD_0000000 , pmd:PMD_0020187 ;
+    rdfs:label "CuZn39Pb3 CW614N"@en ;
+    obo:RO_0000086 ex:CuZn39Pb3Composition ;
+    obo:BFO_0000051 ex:CuZn39Pb3CuPortion , ex:CuZn39Pb3PbPortion , ex:CuZn39Pb3ZnPortion .
+
+ex:CuZn39Pb3CuPortion a pmd:PMD_0020054 .
+ex:CuZn39Pb3PbPortion a pmd:PMD_0020060 .
+ex:CuZn39Pb3ZnPortion a pmd:PMD_0020068 .
+
+ex:CuZn39Pb3Composition a pmd:PMD_0000551 ;
+    pmd:PMD_0000004 ex:CuZn39Pb3CompositionDataItem .
+
+ex:CuZn39Pb3CompositionDataItem a pmd:PMD_0025002 ;
+    obo:IAO_0000136 ex:CuZn39Pb3Composition ;
+    obo:RO_0002351 ex:CuZn39Pb3CuFraction , ex:CuZn39Pb3PbFraction , ex:CuZn39Pb3ZnFraction .
+
+ex:CuZn39Pb3CuFraction a pmd:PMD_0025997 ;
+    obo:OBI_0001937 "58.0"^^xsd:decimal ;
+    obo:IAO_0000039 obo:UO_0000163 ;
+    obo:OBI_0001927 ex:CuZn39Pb3CuPortion ;
+    prov:wasDerivedFrom ex:CuZn39Pb3Asset .
+
+ex:CuZn39Pb3PbFraction a pmd:PMD_0025997 ;
+    obo:OBI_0001937 "3.0"^^xsd:decimal ;
+    obo:IAO_0000039 obo:UO_0000163 ;
+    obo:OBI_0001927 ex:CuZn39Pb3PbPortion ;
+    prov:wasDerivedFrom ex:CuZn39Pb3Asset .
+
+ex:CuZn39Pb3ZnFraction a pmd:PMD_0025997 ;
+    obo:OBI_0001937 "39.0"^^xsd:decimal ;
+    obo:IAO_0000039 obo:UO_0000163 ;
+    obo:OBI_0001927 ex:CuZn39Pb3ZnPortion ;
+    prov:wasDerivedFrom ex:CuZn39Pb3Asset .
+
+ex:CuZn39Pb3Contract a preg:ContractAgreement ;
+    preg:contractAgreementId "CA-CUZN39PB3-0001" .
+
+ex:CuZn39Pb3Asset a preg:DataSpaceAsset ;
+    preg:assetId "asset-cuzn39pb3-composition" ;
+    preg:underContract ex:CuZn39Pb3Contract .
+
+ex:CuZn39Pb3ExemptionClaim a preg:ExemptionClaim ;
+    obo:IAO_0000136 ex:CuZn39Pb3 ;
+    preg:claimsExemption ex:RohsExemption6c ;
+    prov:wasDerivedFrom ex:CuZn39Pb3DeclarationDoc .
+
+ex:CuZn39Pb3DeclarationDoc a preg:DocumentLocation ;
+    preg:documentIdentifier "supplier-declaration-cuzn39pb3.pdf" ;
+    preg:pageNumber 1 .
+
+ex:RohsExemption6c preg:exemptionCode "6(c)" ;
+    preg:validFrom "2011-07-21"^^xsd:date .

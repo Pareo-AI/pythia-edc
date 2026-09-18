@@ -8,7 +8,6 @@ Needs only a running LM Studio server (localhost:1234). Run:
 from __future__ import annotations
 
 import asyncio
-import json
 import os
 import sys
 
@@ -33,7 +32,7 @@ async def demo_synthesizer() -> None:
             asset_id=datasets.asset_id(provider, dataset),
             provider_id=provider.id,
             title=dataset.name,
-            data=json.dumps(dataset.payload()).encode("utf-8"),
+            data=datasets.raw_bytes(dataset),
         )
         for provider, dataset in datasets.iter_datasets()
     ]

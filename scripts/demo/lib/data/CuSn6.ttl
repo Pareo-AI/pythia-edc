@@ -1,0 +1,48 @@
+@prefix ex: <https://pareo.ai/data/example/> .
+@prefix preg: <https://pareo.ai/ontology/regulatory/> .
+@prefix pmd: <https://w3id.org/pmd/co/> .
+@prefix obo: <http://purl.obolibrary.org/obo/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+ex:CuSn6 a pmd:PMD_0000000 , pmd:PMD_0020187 ;
+    rdfs:label "CuSn6 CW452K"@en ;
+    obo:RO_0000086 ex:CuSn6Composition ;
+    obo:BFO_0000051 ex:CuSn6CuPortion , ex:CuSn6SnPortion , ex:CuSn6PPortion .
+
+ex:CuSn6CuPortion a pmd:PMD_0020054 .
+ex:CuSn6SnPortion a pmd:PMD_0020088 .
+ex:CuSn6PPortion a pmd:PMD_0020047 .
+
+ex:CuSn6Composition a pmd:PMD_0000551 ;
+    pmd:PMD_0000004 ex:CuSn6CompositionDataItem .
+
+ex:CuSn6CompositionDataItem a pmd:PMD_0025002 ;
+    obo:IAO_0000136 ex:CuSn6Composition ;
+    obo:RO_0002351 ex:CuSn6CuFraction , ex:CuSn6SnFraction , ex:CuSn6PFraction .
+
+ex:CuSn6CuFraction a pmd:PMD_0025997 ;
+    obo:OBI_0001937 "93.8"^^xsd:decimal ;
+    obo:IAO_0000039 obo:UO_0000163 ;
+    obo:OBI_0001927 ex:CuSn6CuPortion ;
+    prov:wasDerivedFrom ex:CuSn6Asset .
+
+ex:CuSn6SnFraction a pmd:PMD_0025997 ;
+    obo:OBI_0001937 "6.0"^^xsd:decimal ;
+    obo:IAO_0000039 obo:UO_0000163 ;
+    obo:OBI_0001927 ex:CuSn6SnPortion ;
+    prov:wasDerivedFrom ex:CuSn6Asset .
+
+ex:CuSn6PFraction a pmd:PMD_0025997 ;
+    obo:OBI_0001937 "0.2"^^xsd:decimal ;
+    obo:IAO_0000039 obo:UO_0000163 ;
+    obo:OBI_0001927 ex:CuSn6PPortion ;
+    prov:wasDerivedFrom ex:CuSn6Asset .
+
+ex:CuSn6Contract a preg:ContractAgreement ;
+    preg:contractAgreementId "CA-CUSN6-0001" .
+
+ex:CuSn6Asset a preg:DataSpaceAsset ;
+    preg:assetId "asset-cusn6-composition" ;
+    preg:underContract ex:CuSn6Contract .

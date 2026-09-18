@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib
 import os
+import re
 import sys
 
 import pytest
@@ -70,6 +71,27 @@ def test_seed_targets_parsed_from_env(monkeypatch):
     )
     targets = seed._targets()
     assert [t["id"] for t in targets] == ["a", "b"]
+
+
+def test_kupferwerk_dataset_asset_ids_match_ttl_preg_asset_id():
+    """A downstream consumer cross-checks the EDC asset id against the
+    `preg:assetId` literal each kupferwerk .ttl file declares for itself — they
+    must be equal, and the asset must actually be published as Turtle.
+
+    Parsed with a plain regex rather than rdflib, which isn't a dependency here.
+    """
+    provider = next(p for p in datasets.PROVIDERS if p.id == "kupferwerk")
+    data_dir = os.path.join(_LIB, "data")
+    assert provider.datasets, "kupferwerk should publish at least one dataset"
+    for dataset in provider.datasets:
+        assert dataset.content_type == "text/turtle"
+        assert dataset.file_name is not None
+        ttl_path = os.path.join(data_dir, dataset.file_name)
+        with open(ttl_path, encoding="utf-8") as f:
+            ttl = f.read()
+        match = re.search(r'preg:assetId\s+"([^"]+)"', ttl)
+        assert match, f"no preg:assetId literal found in {dataset.file_name}"
+        assert datasets.asset_id(provider, dataset) == match.group(1)
 
 
 if __name__ == "__main__":

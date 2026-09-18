@@ -3,10 +3,11 @@
 # Usage: ./demo up   (or: bash scripts/demo/up.sh)
 #
 # By default this launches ONE local EDC provider connector per logical provider
-# defined in scripts/demo/lib/datasets.py (currently 3: rheinmobil, zugspitze,
-# donautech), plus a consumer connector and a local mock data server, and seeds
-# each provider with only its own datasets. The provider topology (ids + ports)
-# comes from scripts/demo/lib/topology.py — the single source of truth.
+# defined in scripts/demo/lib/datasets.py (currently 4: rheinmobil, zugspitze,
+# donautech, kupferwerk), plus a consumer connector and a local mock data server,
+# and seeds each provider with only its own datasets. The provider topology
+# (ids + ports) comes from scripts/demo/lib/topology.py — the single source of
+# truth.
 #
 # It can also point at EXTERNAL connectors (optionally over TLS) via env vars; set
 # START_LOCAL_CONNECTORS=0 to connect to remote/already-running connectors instead
