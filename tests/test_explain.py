@@ -11,11 +11,11 @@ import pytest
 
 from pythia.errors import TrustError, TrustFailure
 from pythia.explain import LLMExplainer, TemplateExplainer
-from pythia.llm import LMStudioClient
+from pythia.llm import DEFAULT_MODEL, LMStudioClient
 from pythia.trust import validate_offer
 
 LMSTUDIO_URL = "http://localhost:1234/v1"
-TEST_MODEL = "google/gemma-4-e4b"
+TEST_MODEL = DEFAULT_MODEL
 
 BAD_OFFER_MISSING_TARGET = {
     "@id": "offer:abc:malformed",

@@ -13,8 +13,6 @@ from typing import Protocol, runtime_checkable
 
 from .llm import LMStudioClient
 
-_DEFAULT_SYNTH_MODEL = "google/gemma-4-e4b"
-
 _SYSTEM_PROMPT = (
     "You are a data extractor. You are given a user query and one or more data payloads "
     "retrieved from a Gaia-X data space. "
@@ -86,7 +84,7 @@ def _strip_fences(text: str) -> str:
 
 class LLMSynthesizer:
     def __init__(self, client: LMStudioClient | None = None) -> None:
-        self._client = client or LMStudioClient(model=_DEFAULT_SYNTH_MODEL)
+        self._client = client or LMStudioClient()
 
     async def synthesize(self, query: str, sources: list[FetchedAsset]) -> Answer:
         provenance = [

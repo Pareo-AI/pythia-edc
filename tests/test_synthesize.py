@@ -8,16 +8,19 @@ Live tests against a local model skip if LM Studio is unreachable.
 from __future__ import annotations
 
 import json
+import os
+import subprocess
+import sys
 from unittest.mock import AsyncMock, MagicMock
 
 import httpx
 import pytest
 
-from pythia.llm import LMStudioClient
+from pythia.llm import DEFAULT_MODEL, LMStudioClient
 from pythia.synthesize import Answer, FetchedAsset, LLMSynthesizer
 
 LMSTUDIO_URL = "http://localhost:1234/v1"
-LIVE_MODEL = "google/gemma-4-e4b"
+LIVE_MODEL = DEFAULT_MODEL
 
 
 def _llm_up() -> bool:
@@ -390,3 +393,16 @@ async def test_llm_synthesizer_live():
     )
 
     print(f"\n[LLMSynthesizer/{LIVE_MODEL}] answer.to_markdown():\n{answer.to_markdown()}")
+
+
+# ── Model selection ───────────────────────────────────────────────────────────
+
+
+def test_default_synthesizer_uses_pythia_llm_model_env():
+    # llm.py reads the variable at import, so import in a fresh interpreter.
+    env = {**os.environ, "PYTHIA_LLM_MODEL": "vendor/some-other-model"}
+    code = "from pythia.synthesize import LLMSynthesizer; print(LLMSynthesizer()._client.model)"
+    out = subprocess.run(
+        [sys.executable, "-c", code], env=env, capture_output=True, text=True, check=True
+    )
+    assert out.stdout.strip() == "vendor/some-other-model"

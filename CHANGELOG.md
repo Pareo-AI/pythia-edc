@@ -5,6 +5,13 @@ All notable changes to this project are documented here. The format is based on
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) (pre-1.0: minor
 versions may include breaking changes).
 
+## [Unreleased]
+
+### Fixed
+- The default `LLMSynthesizer` (the `ds.ask()` answer) now honours
+  `PYTHIA_LLM_MODEL`. It used a hardcoded model id, so only the explainer
+  followed the variable.
+
 ## [0.3.0] - 2026-07-20
 
 ### Changed
