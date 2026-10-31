@@ -11,6 +11,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # HOLD 3.15 on 3.15: torch (via sentence-transformers, extra "all") has no cp315 wheel, so uv sync fails, https://github.com/pytorch/test-infra/pull/8148
+        # RE-CHECK when torch publishes cp315 wheels: uv sync --python 3.15 --extra dev --extra all && uv run --python 3.15 pytest, then DELETE this hold. Since 2026-10-31.
         python-version: ["3.13", "3.14"]
     steps:
       - uses: actions/checkout@v7
